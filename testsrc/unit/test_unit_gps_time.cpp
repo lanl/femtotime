@@ -17,7 +17,7 @@
 
 // [Namespaces]
 using namespace std;
-using namespace tle::time;
+using namespace femtotime;
 using namespace datur::units;
 namespace test {
 
@@ -146,11 +146,9 @@ void GPSTimeCppUnit::test_leap_seconds()
                                test_seconds_y, 12*60*60.l);
 
   // 10. test addition operations in gps_time_t
-  time1 = tle::time::gps_time_t(2014,11,14,
-                                0,0,0,0);
-  time2 = tle::time::gps_time_t(2014,11,15,
-                                0,0,0,0);
-  tle::time::duration_t td_1_day(fs_per_day);
+  time1 = gps_time_t(2014,11,14,0,0,0,0);
+  time2 = gps_time_t(2014,11,15,0,0,0,0);
+  duration_t td_1_day(fs_per_day);
 
   auto time3 = time1 + td_1_day;
   CPPUNIT_ASSERT_EQUAL_MESSAGE(
@@ -163,9 +161,9 @@ void GPSTimeCppUnit::test_leap_seconds()
     "gps_time_t::operator(DateString) failed", expected1, date1
   );
 
-  auto time6 = tle::time::gps_time_t(1980,1,5,0,0,0,0);
+  auto time6 = gps_time_t(1980,1,5,0,0,0,0);
   auto time6_utc = ToUTCString(time6);       
-  cout<<"gps_epoch="<<ToUTCString(tle::time::gps_time_t::gps_epoch);
+  cout<<"gps_epoch="<<ToUTCString(gps_time_t::gps_epoch);
   cout<<"time6_utc="<<time6_utc;
 }
 

@@ -16,12 +16,11 @@
 #include <datur/datur.hpp>
 #include <datur/msgpack_helpers.hpp>
 
-// [TLE headers]
-#include <tle/time_constants.hpp>
+// [Femtotime headers]
+#include "femtotime/time_constants.hpp"
 
 // [Namespaces]
-namespace tle {
-namespace time {
+namespace femtotime {
 
 typedef int128_t femtosecs_t;
 
@@ -344,12 +343,11 @@ bool IsJulian(const std::string &date_string);
 /** @brief Calculate the number of leap seconds elapsed between two times */
 int LeapSecondsBetween(const utc_time_t& time1, const utc_time_t& t2);
 
-std::ostream& operator<<(std::ostream& os, const tle::time::gps_time_t& t);
-std::ostream& operator<<(std::ostream& os, const tle::time::utc_time_t& t);
-std::ostream& operator<<(std::ostream& os, const tle::time::duration_t& t);
+std::ostream& operator<<(std::ostream& os, const gps_time_t& t);
+std::ostream& operator<<(std::ostream& os, const utc_time_t& t);
+std::ostream& operator<<(std::ostream& os, const duration_t& t);
 
-} /** namespace time */
-} /** namespace tle */
+} /** namespace femtotime */
 
 // Hacky MessagePack operators
 // TODO: Remove MessagePack altogether
@@ -358,15 +356,15 @@ MSGPACK_API_VERSION_NAMESPACE(v2) {
 namespace adaptor {
 
 template<>
-struct pack<tle::time::gps_time_t> {
+struct pack<femtotime::gps_time_t> {
   template<typename Stream>
   packer<Stream>& operator()(msgpack::packer<Stream>& o,
-                             const tle::time::gps_time_t &t) const {
+                             const femtotime::gps_time_t &t) const {
     // NOTE: Technically, this won't work properly on systems that use
     // ones-complement for their arithmetic (it's not UB, just
     // implementation-defined). There is no way that we are compiling on one of
     // those systems (and it will be illegal in C++20 anyawys).
-    auto femtos = static_cast<tle::time::uint128_t>(t.get_fs());
+    auto femtos = static_cast<femtotime::uint128_t>(t.get_fs());
     auto high_bits = static_cast<uint64_t>(femtos >> 64);
     auto low_bits = static_cast<uint64_t>(femtos);
     o.pack_array(2);
@@ -377,17 +375,17 @@ struct pack<tle::time::gps_time_t> {
 };
 
 template<>
-struct convert<tle::time::gps_time_t> {
+struct convert<femtotime::gps_time_t> {
   msgpack::object const& operator()(msgpack::object const& o,
-                                    tle::time::gps_time_t& t) const {
+                                    femtotime::gps_time_t& t) const {
     if (o.type != msgpack::type::ARRAY || o.via.array.size != 2) {
       throw msgpack::type_error();
     }
     auto high_bits = o.via.array.ptr[0].via.u64;
     auto low_bits = o.via.array.ptr[1].via.u64;
-    auto femtos = (static_cast<tle::time::uint128_t>(high_bits) << 64)
-      + static_cast<tle::time::uint128_t>(low_bits);
-    t = tle::time::gps_time_t(static_cast<tle::time::int128_t>(femtos));
+    auto femtos = (static_cast<femtotime::uint128_t>(high_bits) << 64)
+      + static_cast<femtotime::uint128_t>(low_bits);
+    t = femtotime::gps_time_t(static_cast<femtotime::int128_t>(femtos));
     return o;
   }
 };

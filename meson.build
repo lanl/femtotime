@@ -6,7 +6,7 @@
 # meson _mbuilddocs --prefix=$DIO_LOCAL_PREFIX -Dbuild_docs=true
 # ninja -C _mbuilddocs
 
-project('femtotime', 'cpp', version : '2.6.0',
+project('femtotime', 'cpp', version : '0.0.1plus',
        license : 'GPL-3.0-or-later', meson_version: '>= 0.58.2',
        default_options : ['cpp_std=c++17'])
 

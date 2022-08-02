@@ -5,8 +5,7 @@
 */
 #pragma once
 
-namespace tle {
-namespace time {
+namespace femtotime {
 
 #if __GNUC__
     typedef __int128 int128_t;
@@ -39,5 +38,5 @@ static const int128_t fs_per_us = 1'000'000'000;
 static const int128_t secs_per_hour = sec_per_min * min_per_hour;
 static const int128_t secs_per_day = secs_per_hour * hours_per_day;
 static const int128_t secs_per_year = secs_per_day * days_per_year;
-} // time
-} // tle
+
+} // femtotime

@@ -4,7 +4,7 @@
  * @date 10 July 2022
 */
 
-// [tle headers]
+// [femtotime headers]
 #include "femtotime/GPStime.hpp"
 
 // [C++ headers]
@@ -23,8 +23,7 @@ extern "C" {
 // [Namespaces]
 using namespace std;
 
-namespace tle {
-namespace time {
+namespace femtotime {
 
 static const int NANOS_PER_SECOND = 1'000'000'000;
 
@@ -1231,7 +1230,7 @@ long double duration_t::f_days() const
   auto whole_days = _femtosecs / fs_per_day;
   auto partial_days = _femtosecs % fs_per_day;
   return whole_days / fs_per_day
-    + static_cast<long double>(_femtosecs) / fs_per_day;
+    + static_cast<long double>(partial_days) / fs_per_day;
 }
 
 long double duration_t::f_minutes() const
@@ -1239,7 +1238,7 @@ long double duration_t::f_minutes() const
   auto whole_mins = _femtosecs / fs_per_min;
   auto partial_mins = _femtosecs % fs_per_min;
   return whole_mins / fs_per_min
-    + static_cast<long double>(_femtosecs) / fs_per_min;
+    + static_cast<long double>(partial_mins) / fs_per_min;
 }
 
 long double duration_t::f_seconds() const
@@ -1247,7 +1246,7 @@ long double duration_t::f_seconds() const
   auto whole_secs = _femtosecs / fs_per_sec;
   auto partial_secs = _femtosecs % fs_per_sec;
   return whole_secs / fs_per_sec
-    + static_cast<long double>(_femtosecs) / fs_per_sec;
+    + static_cast<long double>(partial_secs) / fs_per_sec;
 }
 
 duration_t duration_t::invert_sign() const
@@ -1286,22 +1285,21 @@ duration_t duration_t::operator/(double other) const
 }
 
 /** @brief Output operator */
-std::ostream& operator<<(std::ostream& os, const tle::time::gps_time_t& t) {
+std::ostream& operator<<(std::ostream& os, const gps_time_t& t) {
   os << t.ToString();           // ToString() already has a GPS_ in it
   return os;
 }
 
 /** @brief Output operator */
-std::ostream& operator<<(std::ostream& os, const tle::time::utc_time_t& t) {
+std::ostream& operator<<(std::ostream& os, const utc_time_t& t) {
   os << t.ToString();
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const tle::time::duration_t& t) {
+std::ostream& operator<<(std::ostream& os, const duration_t& t) {
   // TODO: Better representation of this
   os << t.f_minutes() << " mins";
   return os;
 }
 
-} /** namespace time */
-} /** namespace tle */
+} /** namespace femtotime */
