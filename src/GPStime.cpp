@@ -1229,24 +1229,21 @@ long double duration_t::f_days() const
 {
   auto whole_days = _femtosecs / fs_per_day;
   auto partial_days = _femtosecs % fs_per_day;
-  return whole_days / fs_per_day
-    + static_cast<long double>(partial_days) / fs_per_day;
+  return whole_days + static_cast<long double>(partial_days) / fs_per_day;
 }
 
 long double duration_t::f_minutes() const
 {
   auto whole_mins = _femtosecs / fs_per_min;
   auto partial_mins = _femtosecs % fs_per_min;
-  return whole_mins / fs_per_min
-    + static_cast<long double>(partial_mins) / fs_per_min;
+  return whole_mins + static_cast<long double>(partial_mins) / fs_per_min;
 }
 
 long double duration_t::f_seconds() const
 {
   auto whole_secs = _femtosecs / fs_per_sec;
   auto partial_secs = _femtosecs % fs_per_sec;
-  return whole_secs / fs_per_sec
-    + static_cast<long double>(partial_secs) / fs_per_sec;
+  return whole_secs + static_cast<long double>(partial_secs) / fs_per_sec;
 }
 
 duration_t duration_t::invert_sign() const
