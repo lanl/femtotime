@@ -1,0 +1,71 @@
+%global __meson $HOME/.local/bin/meson
+%global __python %{python3}
+%global set_build_flags %{nil}
+%global _vpath_srcdir .
+%global _vpath_builddir %{_target_platform}
+%global _smp_build_ncpus 64
+
+Summary: orbit propagation libraries
+Name: @PACKAGE_NAME@
+Version: @VERSION@
+%define dateNoDashes %(date +"%Y%m%d")
+Release: %{dateNoDashes}%{?dist}
+License: Copyright (C) 2013, LANS LLC, all rights reserved. Export controlled.
+Group: Science
+URL: http://diorama.lanl.gov/
+Source0: %{name}-%{version}.tar.@COMPRESS_SUFFIX@
+
+Requires: msgpack
+Requires: datur
+
+BuildRequires: fmt-devel
+BuildRequires: msgpack
+BuildRequires: datur
+
+%description
+Femtosecond-based time library.
+
+%package devel
+Summary: Development libraries for femtotime
+Requires: %{name}%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
+
+%description devel
+Development libraries for femtotime.
+
+%prep
+export PATH=$HOME/.local/bin/:$PATH
+%autosetup
+
+%build
+export PATH=$HOME/.local/bin/:$PATH
+%meson
+%meson_build
+
+%install
+export PATH=$HOME/.local/bin/:$PATH
+%meson_install
+
+# check
+# export PATH=$HOME/.local/bin/:$PATH
+# meson_test
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root,-)
+%doc NEWS ChangeLog COPYRIGHT LICENSE AUTHORS
+%{_libdir}/*.so
+
+%files devel
+%defattr(-,root,root,-)
+%{_includedir}/%{name}/*
+%{_libdir}/pkgconfig/*
+
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
+
+
+%changelog
+* Tue Aug 2 2022 Patrick Norton <pnorton@lanl.gov>
+- Initial build.
