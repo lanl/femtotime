@@ -18,7 +18,7 @@
 // [Namespaces]
 using namespace std;
 using namespace femtotime;
-using namespace datur::units;
+
 namespace test {
 
 /** 
@@ -30,7 +30,6 @@ class GPSTimeCppUnit : public CppUnit::TestFixture
   CPPUNIT_TEST(test_leap_seconds);
   CPPUNIT_TEST(test_utc);
   CPPUNIT_TEST(test_t_to_gps_and_back);
-  CPPUNIT_TEST(test_serialization);
   CPPUNIT_TEST(test_isleapyear);
   CPPUNIT_TEST(test_decimalyear);
   CPPUNIT_TEST(test_leap_seconds_equal);
@@ -46,7 +45,6 @@ public:
   void test_leap_seconds();
   void test_utc();
   void test_t_to_gps_and_back();
-  void test_serialization();
   void test_isleapyear();
   void test_decimalyear();
   void test_leap_seconds_equal();
@@ -63,12 +61,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(GPSTimeCppUnit);
  */
 void GPSTimeCppUnit::test_leap_seconds()
 {
-  const double eps = 1.0e-4;
-  ostringstream ss;
-
-  // get the total number of leap seconds to date
-  long n_leap = gps_time_t::leap_seconds.size();
-    
   // 1. Test one second before and after a leap second
   auto time1 = FromUTCString("2015-06-30T23:59:59.0Z");
   auto time2 = FromUTCString("2015-07-01T00:00:00.0Z");  
@@ -202,40 +194,6 @@ void GPSTimeCppUnit::test_t_to_gps_and_back()
 }
 
 /**
- * @brief Test serialization of gps_time_t.
- */
-void GPSTimeCppUnit::test_serialization() {
-  // test serialization of initialized time object
-  gps_time_t time0(2016,6,1, 12,0,0,0);
-  vector<char> packed = datur::pack(time0);
-  gps_time_t time0_unpacked = datur::unpack<gps_time_t>(packed);
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(
-    "serialization of gps_time_t failed",
-    time0, time0_unpacked
-  );
-
-  // test serialization of default constructed time object
-  gps_time_t time1;
-  packed = datur::pack(time1);
-  gps_time_t time1_unpacked = datur::unpack<gps_time_t>(packed);
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(
-    "serialization of default constructed gps_time_t failed",
-    time1, time1_unpacked
-  );
-
-  // test serialization of not_a_date_time time object
-  // FIXME: Do we want to serialize not_a_date_time?
-  // gps_time_t time2((ptime(boost::posix_time::not_a_date_time)));
-  // packed = datur::pack(time2);
-  // gps_time_t time2_unpacked = datur::unpack<gps_time_t>(packed);
-  // CPPUNIT_ASSERT_EQUAL_MESSAGE(
-  //   "serialization of not_a_date_time gps_time_t failed",
-  //   time2, time2_unpacked
-  // );
-}
-
-
-/**
  * @brief Test leap year check
  */
 void GPSTimeCppUnit::test_isleapyear() {
@@ -282,12 +240,13 @@ void GPSTimeCppUnit::test_decimalyear() {
   gps_time_t(2000, 7, 7, 7, 7, 7),
   gps_time_t(2004, 8, 8, 8, 8, 8)};
 
-  std::vector<datur::units::year_time_type> computed;
-  std::vector<datur::units::year_time_type> expected = {
-  1600.00011570*metric_year, 1608.08766324*metric_year,
-  1703.16747156*metric_year, 1900.25525888*metric_year,
-  1902.34030648*metric_year, 1904.42965638*metric_year,
-  2000.51447161*metric_year, 2004.60201908*metric_year};
+  std::vector<double> computed;
+  std::vector<double> expected = {
+    1600.00011570, 1608.08766324,
+    1703.16747156, 1900.25525888,
+    1902.34030648, 1904.42965638,
+    2000.51447161, 2004.60201908
+  };
 
   // Calculate decimal year for each date
   for(size_t i=0; i<times.size(); i++) {
@@ -298,7 +257,7 @@ void GPSTimeCppUnit::test_decimalyear() {
   for(size_t i=0; i<expected.size(); i++) {
     CPPUNIT_ASSERT_DOUBLES_EQUAL_MESSAGE(
       "DecimalYear() check failed",
-      expected[i].value(), computed[i].value(), 1.0e-6
+      expected[i], computed[i], 1.0e-6
     );
   }
 }

@@ -10,12 +10,6 @@
 // [C++ headers]
 #include <algorithm>
 #include <iostream>
-#include <typeinfo>
-
-// [LANLGeoMag]
-extern "C" {
-#include <Lgm/Lgm_CTrans.h>
-}
 
 // [fmt]
 #include <fmt/printf.h>
@@ -24,8 +18,6 @@ extern "C" {
 using namespace std;
 
 namespace femtotime {
-
-static const int NANOS_PER_SECOND = 1'000'000'000;
 
 /**
  * @brief The times (in GPS) that a leap second was added to UTC time.
@@ -944,7 +936,7 @@ gps_time_t& gps_time_t::operator+=(const duration_t &other)
  *
  * @return Decimal year as a boost::units::metric::year_base_unit quantity
  */
-datur::units::year_time_type gps_time_t::DecimalYear() const
+double gps_time_t::DecimalYear() const
 {
   // TODO: Remove
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
@@ -954,7 +946,7 @@ datur::units::year_time_type gps_time_t::DecimalYear() const
   auto days_through_year = static_cast<double>(day_of_year) / days_in_year;
   auto partial = static_cast<double>(partial_days) / fs_per_day;
   auto through_year = days_through_year + partial / days_in_year;
-  return (year + through_year) * datur::units::metric_year;
+  return year + through_year;
 }
 
 std::tuple<int, int, int> gps_time_t::ToDate() const

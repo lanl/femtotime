@@ -12,10 +12,6 @@
 // [MessagePack headers]
 #include <msgpack.hpp>
 
-// [DATUR headers]
-#include <datur/datur.hpp>
-#include <datur/msgpack_helpers.hpp>
-
 // [Femtotime headers]
 #include "femtotime/time_constants.hpp"
 
@@ -112,7 +108,7 @@ public:
   bool IsLeapYear() const;
 
   /** @brief Compute decimal year */
-  datur::units::year_time_type DecimalYear() const;
+  double DecimalYear() const;
 
   /** @brief Get the date portion of the time */
   std::tuple<int, int, int> ToDate() const;
