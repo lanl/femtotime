@@ -195,8 +195,10 @@ public:
   /** @brief The UTC epoch */
   static utc_time_t utc_epoch;
 
+  /** @brief The number of femtoseconds elapsed since the UTC epoch */
   femtosecs_t get_fs() const;
 
+  /** @brief If the time is during a leap second */
   bool is_leap() const;
 
   /** @brief get the year */

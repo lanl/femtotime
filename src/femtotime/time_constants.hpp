@@ -14,7 +14,7 @@ namespace femtotime {
     typedef __int128_t int128_t;
     typedef __uint128_t uint128_t;
 #else
-    #error "128-bit integers are not supported on non-GCC or Clang platforms"
+    #error "128-bit integers are only supported on GCC and Clang"
 #endif
 
 static const int128_t fs_per_ns = 1'000'000;
