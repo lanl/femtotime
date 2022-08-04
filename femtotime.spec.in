@@ -16,11 +16,9 @@ URL: http://diorama.lanl.gov/
 Source0: %{name}-%{version}.tar.@COMPRESS_SUFFIX@
 
 Requires: msgpack
-Requires: datur
 
 BuildRequires: fmt-devel
 BuildRequires: msgpack
-BuildRequires: datur
 
 %description
 Femtosecond-based time library.

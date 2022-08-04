@@ -42,8 +42,7 @@ install_headers('src/femtotime/GPStime.hpp',
 
 fmt_dep = dependency('fmt')
 msgpack_dep = dependency('msgpack')
-datur_dep = dependency('datur')
-all_deps = [fmt_dep, msgpack_dep, datur_dep]
+all_deps = [fmt_dep, msgpack_dep]
 
 libfemtotime = shared_library('femtotime',
         'src/GPStime.cpp',
@@ -92,5 +91,5 @@ pkg.generate(libraries : libfemtotime,
              version : meson.project_version(),
              name : meson.project_name(),
              filebase : meson.project_name(),
-             requires : [fmt_dep, msgpack_dep, datur_dep],
+             requires : [fmt_dep, msgpack_dep],
              description : 'femtotime lib')
