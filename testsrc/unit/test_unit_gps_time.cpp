@@ -82,19 +82,10 @@ void GPSTimeCppUnit::test_leap_seconds()
   time1 = FromUTCString("1970-01-01T00:00:00.0Z");
   time2 = FromUTCString("2017-01-01T00:00:00.0Z");  
   dt = time2 - time1;
+  // Note that the number of seconds ends in 27--that is the number of leap
+  // seconds that have elapsed between these timestamps
+  CPPUNIT_ASSERT_EQUAL(dt.total_milliseconds(), 1'483'228'827'000l);
     
-  // calculate the time difference with boost alone
-  // FIXME: Find better way to calculate this
-  // boost::posix_time::ptime ptime4(
-  //                 boost::posix_time::time_from_string("1970-01-01 00:00:00.0"));
-  // boost::posix_time::ptime ptime5(
-  //                 boost::posix_time::time_from_string("2017-01-01 00:00:00.0"));
-  // boost::posix_time::time_duration dt2 = ptime5 - ptime4;
-
-  // // calculate the difference between boost and DIORAMA
-  // auto diff1 = dt - dt2;
-  // CPPUNIT_ASSERT_EQUAL(diff1.seconds(), n_leap);
-
   // 3. Test at a fractional second straddling a leap second
   time1 = FromUTCString("2015-06-30T23:59:59.5Z");
   time2 = FromUTCString("2015-07-01T00:00:00.0Z");
