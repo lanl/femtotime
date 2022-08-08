@@ -27,8 +27,8 @@ prefix = get_option('prefix')
 pkgdatadir = prefix + '/share/' + meson.project_name()
 add_project_arguments([
                        '-DFEMTOTIME_PKGDATADIR="' + pkgdatadir + '"',
-                       '-DFEMTOTIME_TOP_SRCDIR="' + meson.project_source_root() + '"',
-		       '-DFEMTOTIME_TOP_BUILDDIR="' + meson.current_build_dir() + '"',
+                       # '-DFEMTOTIME_TOP_SRCDIR="' + meson.project_source_root() + '"',
+		       # '-DFEMTOTIME_TOP_BUILDDIR="' + meson.current_build_dir() + '"',
 		      ],
 		      language : 'cpp')
 
