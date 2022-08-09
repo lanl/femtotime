@@ -10,6 +10,7 @@
 // [C++ headers]
 #include <algorithm>
 #include <iostream>
+#include <cassert>
 
 // [fmt]
 #include <fmt/printf.h>
