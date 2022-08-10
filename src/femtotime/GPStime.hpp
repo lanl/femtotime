@@ -54,8 +54,10 @@ public:
   explicit gps_time_t(femtosecs_t fs = 0) : _femtosecs(fs)
   {}
 
+  /** @brief Constructor from timestamp with nanoseconds */
   gps_time_t(int y, int m, int d, int h, int min, int s, int n);
 
+  /** @brief Constructor from timestamp with double-valued seconds */
   gps_time_t(int year, int month, int day,
                int hours, int minutes, long double secs);
 
@@ -183,9 +185,6 @@ public:
   utc_time_t(femtosecs_t femtos, bool leap) : _femtosecs(femtos), _leap(leap)
   {}
 
-  // /** @brief Construct from BOOST posix_time ptime. */
-  // utc_time_t(const boost::posix_time::ptime& t);
-
   /** @brief The UTC times of leap seconds */
   static std::vector<utc_time_t> leap_seconds;
 
@@ -273,37 +272,85 @@ public:
   duration_t(femtosecs_t femtos) : _femtosecs(femtos)
   {;}
 
+  /** @brief The total number of femtoseconds in the duration */
   femtosecs_t get_fs() const;
 
+  /** @brief The number of complete days (86400 seconds) */
   long total_days() const;
+
+  /** @brief The number of complete hours */
   long total_hours() const;
+
+  /** @brief The number of complete seconds */
   long total_seconds() const;
+
+  /** @brief The number of complete milliseconds */
   long total_milliseconds() const;
+
+  /** @brief The number of complete microseconds */
   long total_microseconds() const;
+
+  /** @brief The number of complete nanoseconds */
   long total_nanoseconds() const;
 
+  /** @brief The hour of the day (0-23) */
   long hours() const;
+
+  /** @brief The minute of the current hour (0-59) */
   long minutes() const;
+
+  /** @brief The second of the current minute (0-59) */
   long seconds() const;
 
+  /** @brief The total number of days elapsed, including partial days */
   long double f_days() const;
+
+  /** @brief The total number of minutes elapsed, including partial mins */
   long double f_minutes() const;
+
+  /** @brief The total number of seconds elapsed, including partial secs */
   long double f_seconds() const;
 
+  /** @brief Returns the additive inverse of the duration */
   duration_t invert_sign() const;
+
+  /** @brief Returns if the duration is negative */
   bool is_negative() const;
 
+  /** @brief Constructs a duration from an integer number of years */
   static duration_t from_years(int years);
+
+  /** @brief Constructs a duration from an integer number of hours*/
   static duration_t from_hours(femtosecs_t hours);
+
+  /** @brief Constructs a duration from an integer number of minutes */
   static duration_t from_mins(femtosecs_t mins);
+
+  /** @brief Constructs a duration from an integer number of minutes */
   static duration_t from_mins(int mins);
+
+  /** @brief Constructs a duration from an integer number of minutes */
   static duration_t from_mins(long mins);
+
+  /** @brief Intentionally deleted overload--use from_mins_f instead */
   static duration_t from_mins(double mins) = delete;
+
+  /** @brief Constructs a duration from a number of minutes */
   static duration_t from_mins_f(double mins);
+
+  /** @brief Constructs a duration from a number of minutes */
   static duration_t from_mins_f(long double mins);
+
+  /** @brief Constructs a duration from a number of seconds */
   static duration_t from_secs(long double seconds);
+
+  /** @brief Constructs a duration from a number of milliseconds */
   static duration_t from_millis(femtosecs_t milliseconds);
+
+  /** @brief Constructs a duration from an integer number of microseconds */
   static duration_t from_micros(femtosecs_t microseconds);
+
+  /** @brief Constructs a duration from an integer number of nanoseconds */
   static duration_t from_nanos(femtosecs_t nanoseconds);
 
   bool operator<(const duration_t &other) const;
