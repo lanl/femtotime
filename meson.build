@@ -38,6 +38,7 @@ all_inc_dirs = [src_dir, source_root_dir]
 
 install_headers('src/femtotime/GPStime.hpp',
   'src/femtotime/time_constants.hpp',
+  'src/femtotime/msgpack.hpp',
   install_dir : 'include/femtotime')
 
 fmt_dep = dependency('fmt')
