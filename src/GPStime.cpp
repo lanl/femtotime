@@ -485,7 +485,7 @@ gps_time_t gps_time_t::FromUTCString(const std::string& utc_time)
 
   // Scan the string into constituent parts
   int result;
-  long nanos;
+  long nanos, femtos;
   auto dot_pos = utc_time.find(".");
   if (dot_pos == std::string::npos) {
     // If no "." in string, the number of seconds is an integer, so we can avoid
@@ -507,10 +507,10 @@ gps_time_t gps_time_t::FromUTCString(const std::string& utc_time)
     // `.0001` and `.1` would both parse as `1` here. As such, we split the
     // string at the dot, parse the pre-dot portion normally, and then parse the
     // post-decimal portion seperately.
-    long unscaled_partials;
+    unsigned long long unscaled_partials;
     int pre_partials, post_partials;
 
-    result = sscanf(utc_time.c_str(), "%04d-%02d-%02dT%02d:%02d:%02d.%n%ld%nZ",
+    result = sscanf(utc_time.c_str(), "%04d-%02d-%02dT%02d:%02d:%02d.%n%llu%nZ",
                     &year, &month, &day, &hour, &min, &seconds,
                     &pre_partials, &unscaled_partials, &post_partials);
 
@@ -522,16 +522,21 @@ gps_time_t gps_time_t::FromUTCString(const std::string& utc_time)
     }
 
     auto partial_len = post_partials - pre_partials;
-    const int nano_digits = 9;
-    auto scaling_factor = nano_digits - partial_len;
+    const int femto_digits = 15;
+    auto scaling_factor = femto_digits - partial_len;
+    femtosecs_t total_femtos;
     if (scaling_factor < 0) {
-      nanos = unscaled_partials / pow10(-scaling_factor);
+      total_femtos = unscaled_partials / pow10(-scaling_factor);
     } else {
-      nanos = unscaled_partials * pow10(scaling_factor);
+      total_femtos = unscaled_partials * pow10(scaling_factor);
     }
+    nanos = total_femtos / fs_per_ns;
+    femtos = total_femtos % fs_per_ns;
   }
+  // TODO: Create femtosecond-precision constructor
   utc_time_t parsed_time(year, month, day, hour, min, seconds, nanos);
-  return FromUTC(parsed_time);
+  duration_t addl_femtos(femtos);
+  return FromUTC(parsed_time) + addl_femtos;
 }
 
 /**
@@ -550,7 +555,7 @@ gps_time_t gps_time_t::FromGPSString(const std::string& gps_time)
 
   // Scan the string into constituent parts
   int result;
-  long nanos;
+  long nanos, femtos;
   auto dot_pos = gps_time.find(".");
   if (dot_pos == std::string::npos) {
     // If no "." in string, the number of seconds is an integer, so we can avoid
@@ -587,15 +592,19 @@ gps_time_t gps_time_t::FromGPSString(const std::string& gps_time)
     }
 
     auto partial_len = post_partials - pre_partials;
-    const int nano_digits = 9;
-    auto scaling_factor = nano_digits - partial_len;
+    const int femto_digits = 15;
+    auto scaling_factor = femto_digits - partial_len;
+    femtosecs_t total_femtos;
     if (scaling_factor < 0) {
-      nanos = unscaled_partials / pow10(-scaling_factor);
+      total_femtos = unscaled_partials / pow10(-scaling_factor);
     } else {
-      nanos = unscaled_partials * pow10(scaling_factor);
+      total_femtos = unscaled_partials * pow10(scaling_factor);
     }
+    nanos = total_femtos / fs_per_ns;
+    femtos = total_femtos % fs_per_ns;
   }
-  return gps_time_t(year, month, day, hour, min, seconds, nanos);
+  duration_t addl_femtos(femtos);
+  return gps_time_t(year, month, day, hour, min, seconds, nanos) + addl_femtos;
 }
 
 /**
