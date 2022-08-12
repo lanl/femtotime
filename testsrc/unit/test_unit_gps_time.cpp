@@ -758,5 +758,12 @@ void GPSTimeCppUnit::test_from_gps_str() {
     "End of the 1976-77 leap second converts incorrectly",
     time1, time2
   );
+
+  time1 = gps_time_t(2022, 1, 1, 12, 34, 56, 789'012'345) + duration_t(678'901);
+  time2 = FromGPSString("GPS_2022-1-1T12:34:56.789012345678901Z");
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(
+    "Femtosecond-precision GPS string converts incorrectly",
+    time1, time2
+  );
 }
 } /* namespace test */
