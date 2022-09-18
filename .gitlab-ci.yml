@@ -48,7 +48,7 @@ unit-test-job:   # This job runs in the test stage.
     # - export DIO_LOCAL_PREFIX=${CI_PROJECT_DIR}/ULOCAL
     # - echo "setting diorama and other path variables based on $DIO_LOCAL_PREFIX"
     # - . /usr/share/diorama-bootstrap/diorama-bashrc-snippet
-    # - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
+    - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
     # - export PATH=/root/.local/bin:$PATH
     - git branch
     - echo "Building and running unit tests..."
