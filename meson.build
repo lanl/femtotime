@@ -6,7 +6,7 @@
 # meson _mbuilddocs --prefix=$DIO_LOCAL_PREFIX -Dbuild_docs=true
 # ninja -C _mbuilddocs
 
-project('femtotime', 'cpp', version : '2.6.0',
+project('femtotime', 'cpp', version : '0.1.0plus',
        license : 'GPL-3.0-or-later', meson_version: '>= 0.58.2',
        default_options : ['cpp_std=c++17'])
 
@@ -27,8 +27,8 @@ prefix = get_option('prefix')
 pkgdatadir = prefix + '/share/' + meson.project_name()
 add_project_arguments([
                        '-DFEMTOTIME_PKGDATADIR="' + pkgdatadir + '"',
-                       '-DFEMTOTIME_TOP_SRCDIR="' + meson.project_source_root() + '"',
-		       '-DFEMTOTIME_TOP_BUILDDIR="' + meson.current_build_dir() + '"',
+                       # '-DFEMTOTIME_TOP_SRCDIR="' + meson.project_source_root() + '"',
+		       # '-DFEMTOTIME_TOP_BUILDDIR="' + meson.current_build_dir() + '"',
 		      ],
 		      language : 'cpp')
 
@@ -38,12 +38,12 @@ all_inc_dirs = [src_dir, source_root_dir]
 
 install_headers('src/femtotime/GPStime.hpp',
   'src/femtotime/time_constants.hpp',
+  'src/femtotime/msgpack.hpp',
   install_dir : 'include/femtotime')
 
 fmt_dep = dependency('fmt')
 msgpack_dep = dependency('msgpack')
-datur_dep = dependency('datur')
-all_deps = [fmt_dep, msgpack_dep, datur_dep]
+all_deps = [fmt_dep, msgpack_dep]
 
 libfemtotime = shared_library('femtotime',
         'src/GPStime.cpp',
@@ -92,5 +92,5 @@ pkg.generate(libraries : libfemtotime,
              version : meson.project_version(),
              name : meson.project_name(),
              filebase : meson.project_name(),
-             requires : [fmt_dep, msgpack_dep, datur_dep],
+             requires : [fmt_dep, msgpack_dep],
              description : 'femtotime lib')

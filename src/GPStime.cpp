@@ -4,18 +4,13 @@
  * @date 10 July 2022
 */
 
-// [tle headers]
+// [femtotime headers]
 #include "femtotime/GPStime.hpp"
 
 // [C++ headers]
 #include <algorithm>
 #include <iostream>
-#include <typeinfo>
-
-// [LANLGeoMag]
-extern "C" {
-#include <Lgm/Lgm_CTrans.h>
-}
+#include <cassert>
 
 // [fmt]
 #include <fmt/printf.h>
@@ -23,10 +18,7 @@ extern "C" {
 // [Namespaces]
 using namespace std;
 
-namespace tle {
-namespace time {
-
-static const int NANOS_PER_SECOND = 1'000'000'000;
+namespace femtotime {
 
 /**
  * @brief The times (in GPS) that a leap second was added to UTC time.
@@ -156,6 +148,14 @@ static constexpr array<int, 12> rotated_month_days = {
   31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 29
 };
 
+/**
+ * @brief Converts a day count to a year-month-day triple.
+ *
+ * The second parameter, `y2000_epoch`, is the number of days between the
+ * desired epoch and Mar. 1, 2000, for reasons explained within the function
+ * body. Additionally, the returned triple is in proleptic Gregorian format;
+ * there is no support for conversion to Julian dates for dates before 1752.
+ */
 static std::tuple<int, int, int>
 dayToDate(int64_t total_days, int64_t y2000_epoch)
 {
@@ -247,6 +247,15 @@ static std::tuple<int, int, int> utcDayToDate(int64_t total_days)
   return dayToDate(total_days, 11017);
 }
 
+/**
+ * @brief Converts a year-month-day triple to a date
+ *
+ * The fourth parameter, `y2000_epoch`, refers to the number of days between the
+ * desired epoch and Mar. 1, 2000. The reasoning for this is explained in the
+ * method body. Additionally, the year-month-day triple is in proleptic
+ * Gregorian format; there is no support for conversion to the Julian calendar
+ * for dates before 1752.
+ */
 static int64_t dateToDays(int64_t year, int month, int day, int64_t y2000_epoch)
 {
   // Like daysToDate, this converts first to days relative to Mar. 1, 2000
@@ -283,8 +292,8 @@ static int64_t dateToUTCDays(int64_t year, int month, int day)
   return dateToDays(year, month, day, 11017);
 }
 
-femtosecs_t DateTime2femtosecs(int year, int month, int day,
-                                 int hours, int minutes, long double secs)
+static femtosecs_t DateTime2femtosecs(int year, int month, int day,
+                                      int hours, int minutes, long double secs)
 {
   femtosecs_t fs;
   fs = (secs * fs_per_sec);
@@ -295,8 +304,8 @@ femtosecs_t DateTime2femtosecs(int year, int month, int day,
   return fs;
 }
 
-femtosecs_t DateTime2UTC(int year, int month, int day,
-                         int hours, int minutes, long double secs)
+static femtosecs_t DateTime2UTC(int year, int month, int day,
+                                int hours, int minutes, long double secs)
 {
   femtosecs_t fs;
   fs = (secs * fs_per_sec);
@@ -305,13 +314,6 @@ femtosecs_t DateTime2UTC(int year, int month, int day,
   auto days_since_epoch = dateToUTCDays(year, month, day);
   fs += (days_since_epoch * fs_per_day);
   return fs;
-}
-
-gps_time_t FromDateTimeNumbers(int year, int month, int day,
-                                 int hours, int minutes, long double secs)
-{
-  auto fs = DateTime2femtosecs(year, month, day, hours, minutes, secs);
-  return gps_time_t(fs);
 }
 
 static constexpr bool is_leap_year(int year)
@@ -342,6 +344,7 @@ static int date2doy(int year, int month, int day)
   day_of_year += (day - 1);
   return day_of_year;
 }
+
 /**
  * @brief The femtosecond conversion factor needed to adjust from UTC to GPS.
  *
@@ -493,7 +496,7 @@ gps_time_t gps_time_t::FromUTCString(const std::string& utc_time)
 
   // Scan the string into constituent parts
   int result;
-  long nanos;
+  long nanos, femtos;
   auto dot_pos = utc_time.find(".");
   if (dot_pos == std::string::npos) {
     // If no "." in string, the number of seconds is an integer, so we can avoid
@@ -515,10 +518,10 @@ gps_time_t gps_time_t::FromUTCString(const std::string& utc_time)
     // `.0001` and `.1` would both parse as `1` here. As such, we split the
     // string at the dot, parse the pre-dot portion normally, and then parse the
     // post-decimal portion seperately.
-    long unscaled_partials;
+    unsigned long long unscaled_partials;
     int pre_partials, post_partials;
 
-    result = sscanf(utc_time.c_str(), "%04d-%02d-%02dT%02d:%02d:%02d.%n%ld%nZ",
+    result = sscanf(utc_time.c_str(), "%04d-%02d-%02dT%02d:%02d:%02d.%n%llu%nZ",
                     &year, &month, &day, &hour, &min, &seconds,
                     &pre_partials, &unscaled_partials, &post_partials);
 
@@ -530,16 +533,21 @@ gps_time_t gps_time_t::FromUTCString(const std::string& utc_time)
     }
 
     auto partial_len = post_partials - pre_partials;
-    const int nano_digits = 9;
-    auto scaling_factor = nano_digits - partial_len;
+    const int femto_digits = 15;
+    auto scaling_factor = femto_digits - partial_len;
+    femtosecs_t total_femtos;
     if (scaling_factor < 0) {
-      nanos = unscaled_partials / pow10(-scaling_factor);
+      total_femtos = unscaled_partials / pow10(-scaling_factor);
     } else {
-      nanos = unscaled_partials * pow10(scaling_factor);
+      total_femtos = unscaled_partials * pow10(scaling_factor);
     }
+    nanos = total_femtos / fs_per_ns;
+    femtos = total_femtos % fs_per_ns;
   }
+  // TODO: Create femtosecond-precision constructor
   utc_time_t parsed_time(year, month, day, hour, min, seconds, nanos);
-  return FromUTC(parsed_time);
+  duration_t addl_femtos(femtos);
+  return FromUTC(parsed_time) + addl_femtos;
 }
 
 /**
@@ -558,7 +566,7 @@ gps_time_t gps_time_t::FromGPSString(const std::string& gps_time)
 
   // Scan the string into constituent parts
   int result;
-  long nanos;
+  long nanos, femtos;
   auto dot_pos = gps_time.find(".");
   if (dot_pos == std::string::npos) {
     // If no "." in string, the number of seconds is an integer, so we can avoid
@@ -595,15 +603,19 @@ gps_time_t gps_time_t::FromGPSString(const std::string& gps_time)
     }
 
     auto partial_len = post_partials - pre_partials;
-    const int nano_digits = 9;
-    auto scaling_factor = nano_digits - partial_len;
+    const int femto_digits = 15;
+    auto scaling_factor = femto_digits - partial_len;
+    femtosecs_t total_femtos;
     if (scaling_factor < 0) {
-      nanos = unscaled_partials / pow10(-scaling_factor);
+      total_femtos = unscaled_partials / pow10(-scaling_factor);
     } else {
-      nanos = unscaled_partials * pow10(scaling_factor);
+      total_femtos = unscaled_partials * pow10(scaling_factor);
     }
+    nanos = total_femtos / fs_per_ns;
+    femtos = total_femtos % fs_per_ns;
   }
-  return gps_time_t(year, month, day, hour, min, seconds, nanos);
+  duration_t addl_femtos(femtos);
+  return gps_time_t(year, month, day, hour, min, seconds, nanos) + addl_femtos;
 }
 
 /**
@@ -713,7 +725,7 @@ void Julian2UTC(const long &nday, int &year, int &month, int &day)
 std::string String2Date(const std::string& date_string)
 {
   int year, month, day;
-  std::string result("NOT_A_DATE_STRING");
+  std::string result;
   try {
   
     if (IsJulian(date_string)) { 
@@ -945,7 +957,7 @@ gps_time_t& gps_time_t::operator+=(const duration_t &other)
  *
  * @return Decimal year as a boost::units::metric::year_base_unit quantity
  */
-datur::units::year_time_type gps_time_t::DecimalYear() const
+double gps_time_t::DecimalYear() const
 {
   // TODO: Remove
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
@@ -955,9 +967,12 @@ datur::units::year_time_type gps_time_t::DecimalYear() const
   auto days_through_year = static_cast<double>(day_of_year) / days_in_year;
   auto partial = static_cast<double>(partial_days) / fs_per_day;
   auto through_year = days_through_year + partial / days_in_year;
-  return (year + through_year) * datur::units::metric_year;
+  return year + through_year;
 }
 
+/**
+ * @brief Convert to y/m/d triple
+ */
 std::tuple<int, int, int> gps_time_t::ToDate() const
 {
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
@@ -974,23 +989,30 @@ utc_time_t::utc_time_t(int y, int mon, int d, int h, int min, int s, int n)
 }
 
 utc_time_t::utc_time_t(int year, int month, int day,
-                           int hours, int minutes, long double secs)
+                       int hours, int minutes, long double secs)
   : _leap(secs >= 60)
 {
   secs -= _leap;
   _femtosecs = DateTime2UTC(year, month, day, hours, minutes, secs);
 }
 
+/** @brief The number of femtoseconds elapsed since the UTC epoch
+ *
+ * Note that this excludes elapsed leap seconds, for a better means of measuring
+ * duration, use gps_time_t.
+ */
 femtosecs_t utc_time_t::get_fs() const
 {
   return _femtosecs;
 }
 
+/** @brief If the current UTC time is a leap second or not*/
 bool utc_time_t::is_leap() const
 {
   return _leap;
 }
 
+/** @brief The year of the timestamp */
 int utc_time_t::Year() const
 {
   // FIXME: Can this be done without calculating the month/day?
@@ -999,6 +1021,7 @@ int utc_time_t::Year() const
   return year;
 }
 
+/** @brief The month of the timestamp */
 int utc_time_t::Month() const
 {
   // FIXME: Can this be done without calculating the year/day?
@@ -1007,6 +1030,7 @@ int utc_time_t::Month() const
   return month;
 }
 
+/** @brief The day of the timestamp */
 int utc_time_t::Day() const
 {
   // FIXME: Can this be done without calculating the year/month?
@@ -1015,36 +1039,45 @@ int utc_time_t::Day() const
   return day;
 }
 
+/** @brief The hour of the timestamp */
 int utc_time_t::Hour() const
 {
   auto [days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
   return partial_days / fs_per_hour;
 }
 
+/** @brief The minute of the timestamp */
 int utc_time_t::Minute() const
 {
   auto [hours, partial_hours] = euclidean_div(_femtosecs, fs_per_hour);
   return partial_hours / fs_per_min;
 }
 
+/** @brief The second and partial second of the timestamp
+ *
+ * To get the integer number of seconds, use WholeSeconds.
+ */
 double utc_time_t::Seconds() const
 {
   auto [minutes, partial_minutes] = euclidean_div(_femtosecs, fs_per_min);
   return static_cast<double>(partial_minutes) / fs_per_sec + _leap;
 }
 
+/** @brief The second of the timestamp */
 int utc_time_t::WholeSeconds() const
 {
   auto [minutes, partial_minutes] = euclidean_div(_femtosecs, fs_per_min);
   return partial_minutes / fs_per_sec + _leap;
 }
 
+/** @brief The nanoseconds of the timestamp */
 int utc_time_t::Nanoseconds() const
 {
   auto [seconds, partial_seconds] = euclidean_div(_femtosecs, fs_per_sec);
   return partial_seconds / fs_per_ns;
 }
 
+/** @brief The 1-indexed day of the year */
 int utc_time_t::DayOfYear() const
 {
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
@@ -1053,11 +1086,13 @@ int utc_time_t::DayOfYear() const
   return date2doy(year, month, day) + 1;
 }
 
+/** @brief Convert the timestamp to its equivalent GPS time */
 gps_time_t utc_time_t::ToGPS() const
 {
   return gps_time_t::FromUTC(*this);
 }
 
+/** @brief Convert the timestamp to a string */
 std::string utc_time_t::ToString() const
 {
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
@@ -1072,6 +1107,7 @@ std::string utc_time_t::ToString() const
   );
 }
 
+/** @brief Convert the date portion of the timestamp to a string */
 std::string utc_time_t::DateString() const
 {
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
@@ -1079,6 +1115,7 @@ std::string utc_time_t::DateString() const
   return fmt::format("{:04}-{:02}-{:02}", year, month, day);
 }
 
+/** @brief Get the date portion of the timestamp as a y/m/d triple */
 std::tuple<int, int, int> utc_time_t::ToDate() const
 {
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
@@ -1107,154 +1144,177 @@ bool utc_time_t::operator<(const utc_time_t &other) const {
   }
 }
 
+/** @brief The total number of femtoseconds in the duration */
 femtosecs_t duration_t::get_fs() const
 {
   return _femtosecs;
 }
 
+/** @brief The total number of days elapsed */
 long duration_t::total_days() const
 {
   return _femtosecs / fs_per_day;
 }
 
+/** @brief The total number of hours elapsed */
 long duration_t::total_hours() const
 {
   return _femtosecs / fs_per_hour;
 }
 
+/** @brief The total number of seconds elapsed */
 long duration_t::total_seconds() const
 {
   return _femtosecs / fs_per_sec;
 }
 
+/** @brief The total number of milliseconds elapsed */
 long duration_t::total_milliseconds() const
 {
   return _femtosecs / fs_per_ms;
 }
 
+/** @brief The total number of microseconds elapsed */
 long duration_t::total_microseconds() const
 {
   return _femtosecs / fs_per_us;
 }
 
+/** @brief The total number of nanoseconds elapsed */
 long duration_t::total_nanoseconds() const
 {
   return _femtosecs / fs_per_ns;
 }
 
+/** @brief The normalized number of hours elapsed (0-23) */
 long duration_t::hours() const
 {
   auto partial_days = _femtosecs % fs_per_day;
   return partial_days / fs_per_hour;
 }
 
+/** @brief The normalized number of minutes elapsed (0-59) */
 long duration_t::minutes() const
 {
   auto partial_hours = _femtosecs % fs_per_hour;
   return partial_hours / fs_per_min;
 }
 
+/** @brief The normalized number of seconds elapsed (0-59) */
 long duration_t::seconds() const
 {
   auto partial_mins = _femtosecs % fs_per_min;
   return partial_mins / fs_per_sec;
 }
 
+/** @brief Create a duration from an integer number of years */
 duration_t duration_t::from_years(int years)
 {
   femtosecs_t femtos = years * fs_per_year;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of hours */
 duration_t duration_t::from_hours(femtosecs_t hours)
 {
   femtosecs_t femtos = hours * fs_per_hour;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of minutes */
 duration_t duration_t::from_mins(femtosecs_t mins)
 {
   femtosecs_t femtos = mins * fs_per_min;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of minutes */
 duration_t duration_t::from_mins(int mins)
 {
   femtosecs_t femtos = static_cast<femtosecs_t>(mins) * fs_per_min;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of minutes */
 duration_t duration_t::from_mins(long mins)
 {
   femtosecs_t femtos = static_cast<femtosecs_t>(mins) * fs_per_min;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from a number of minutes */
 duration_t duration_t::from_mins_f(double mins)
 {
   femtosecs_t femtos = mins * fs_per_min;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from a number of minutes */
 duration_t duration_t::from_mins_f(long double mins)
 {
   femtosecs_t femtos = mins * fs_per_min;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of seconds */
 duration_t duration_t::from_secs(long double seconds)
 {
   femtosecs_t femtos = seconds * fs_per_sec;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of milliseconds */
 duration_t duration_t::from_millis(femtosecs_t milliseconds)
 {
   auto femtos = milliseconds * fs_per_ms;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of microseconds */
 duration_t duration_t::from_micros(femtosecs_t microseconds)
 {
   auto femtos = microseconds * fs_per_us;
   return duration_t(femtos);
 }
 
+/** @brief Create a duration from an integer number of nanoseconds */
 duration_t duration_t::from_nanos(femtosecs_t nanoseconds)
 {
   auto femtos = nanoseconds * fs_per_ns;
   return duration_t(femtos);
 }
 
+/** @brief The number of days and partial days elapsed */
 long double duration_t::f_days() const
 {
   auto whole_days = _femtosecs / fs_per_day;
   auto partial_days = _femtosecs % fs_per_day;
-  return whole_days / fs_per_day
-    + static_cast<long double>(_femtosecs) / fs_per_day;
+  return whole_days + static_cast<long double>(partial_days) / fs_per_day;
 }
 
+/** @brief The number of minutes and partial minutes elapsed */
 long double duration_t::f_minutes() const
 {
   auto whole_mins = _femtosecs / fs_per_min;
   auto partial_mins = _femtosecs % fs_per_min;
-  return whole_mins / fs_per_min
-    + static_cast<long double>(_femtosecs) / fs_per_min;
+  return whole_mins + static_cast<long double>(partial_mins) / fs_per_min;
 }
 
+/** @brief The number of seconds and partial seconds elapsed */
 long double duration_t::f_seconds() const
 {
   auto whole_secs = _femtosecs / fs_per_sec;
   auto partial_secs = _femtosecs % fs_per_sec;
-  return whole_secs / fs_per_sec
-    + static_cast<long double>(_femtosecs) / fs_per_sec;
+  return whole_secs + static_cast<long double>(partial_secs) / fs_per_sec;
 }
 
+/** @brief Returns the negation of this duration */
 duration_t duration_t::invert_sign() const
 {
   return duration_t(-_femtosecs);
 }
 
+/** @brief If the duration is a negative duration */
 bool duration_t::is_negative() const
 {
   return _femtosecs < 0;
@@ -1286,22 +1346,21 @@ duration_t duration_t::operator/(double other) const
 }
 
 /** @brief Output operator */
-std::ostream& operator<<(std::ostream& os, const tle::time::gps_time_t& t) {
+std::ostream& operator<<(std::ostream& os, const gps_time_t& t) {
   os << t.ToString();           // ToString() already has a GPS_ in it
   return os;
 }
 
 /** @brief Output operator */
-std::ostream& operator<<(std::ostream& os, const tle::time::utc_time_t& t) {
+std::ostream& operator<<(std::ostream& os, const utc_time_t& t) {
   os << t.ToString();
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const tle::time::duration_t& t) {
+std::ostream& operator<<(std::ostream& os, const duration_t& t) {
   // TODO: Better representation of this
   os << t.f_minutes() << " mins";
   return os;
 }
 
-} /** namespace time */
-} /** namespace tle */
+} /** namespace femtotime */
