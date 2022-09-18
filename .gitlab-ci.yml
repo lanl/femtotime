@@ -8,26 +8,26 @@
 # For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
 
 stages:          # List of stages for jobs, and their order of execution
-  - prepare
+  # - prepare
   - test
 
-prepare-job:
-  stage: prepare
-  cache:
-    paths:
-      - /builds/diorama/${CI_PROJECT_NAME}/*
-      - /builds/diorama/${CI_PROJECT_NAME}
-  artifacts:
-    when: 
-    paths:
-      - /builds/diorama/${CI_PROJECT_NAME}/*
-      - /builds/diorama/${CI_PROJECT_NAME}
-  script:
-    # - pip3 install --user --upgrade meson
-    # - find / -xdev -name meson -ls
-    # - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
-    # - meson --version || true
-    - echo "not much prep"
+# prepare-job:
+#   stage: prepare
+#   cache:
+#     paths:
+#       - /builds/diorama/${CI_PROJECT_NAME}/*
+#       - /builds/diorama/${CI_PROJECT_NAME}
+#   artifacts:
+#     when: 
+#     paths:
+#       - /builds/diorama/${CI_PROJECT_NAME}/*
+#       - /builds/diorama/${CI_PROJECT_NAME}
+#   script:
+#     # - pip3 install --user --upgrade meson
+#     # - find / -xdev -name meson -ls
+#     # - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
+#     # - meson --version || true
+#     - echo "not much prep"
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
@@ -59,6 +59,6 @@ unit-test-job:   # This job runs in the test stage.
     - git branch
     - echo "Building and running unit tests..."
     - /bin/rm -rf _mbuild
-    - meson _mbuild --prefix=$DIO_LOCAL_PREFIX
+    - meson _mbuild
     - meson test -C _mbuild --suite unit
     - echo "Ran the meson unit tests."
