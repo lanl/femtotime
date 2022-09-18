@@ -43,7 +43,7 @@ unit-test-job:   # This job runs in the test stage.
     reports:
       junit: _mbuild/meson-logs/testlog.junit.xml
   script:
-    - . /usr/local/src/lanl-proxy-bashrc-snippet
+    # - . /usr/local/src/lanl-proxy-bashrc-snippet
     # - export DIO_REPO_BASE=/builds/diorama
     # - export DIO_LOCAL_PREFIX=${CI_PROJECT_DIR}/ULOCAL
     # - echo "setting diorama and other path variables based on $DIO_LOCAL_PREFIX"
