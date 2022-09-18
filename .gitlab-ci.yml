@@ -23,176 +23,42 @@ prepare-job:
       - /builds/diorama/${CI_PROJECT_NAME}/*
       - /builds/diorama/${CI_PROJECT_NAME}
   script:
-    - echo $PATH
-    - meson --version
-    - rsync --version
-    - df -h
-    - printenv | grep CI_
-    - echo setting http proxy for Los Alamos
-    - export http_proxy=http://proxyout.lanl.gov:8080
-    - export https_proxy=http://proxyout.lanl.gov:8080
-    - export no_proxy=localhost,lanl.gov
-    - export HTTP_PROXY=http://proxyout.lanl.gov:8080
-    - export HTTPS_PROXY=http://proxyout.lanl.gov:8080
-    - export NO_PROXY=localhost,lanl.gov
-    - echo setting diorama variables
-    - export DIO_REPO_BASE=/builds/diorama
-    - export DIO_LOCAL_PREFIX=/usr/local
-    - export PATH=$DIO_LOCAL_PREFIX/bin:$HOME/.local/bin:$PATH
-    - export PKG_CONFIG_PATH=$DIO_LOCAL_PREFIX/lib/pkgconfig:$DIO_LOCAL_PREFIX/lib64/pkgconfig:$DIO_LOCAL_PREFIX/share/pkgconfig:/usr/lib64/pkgconfig:$PKG_CONFIG_PATH
-    - export LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LIBRARY_PATH
-    - export LD_LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LD_LIBRARY_PATH
-    - export C_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$C_INCLUDE_PATH
-    - export CPLUS_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$CPLUS_INCLUDE_PATH
-    - export http_proxy=http://proxyout.lanl.gov:8080
-    - export https_proxy=http://proxyout.lanl.gov:8080
-    - export PATH=/root/.local/bin:$PATH
-    - echo '=============================================================='
-    - printenv | grep PATH
-    - echo '=============================================================='
-    - /usr/bin/rpm -ql diorama-bootstrap | grep py
-    - echo '=============================================================='
-    - cd /tmp
-    - DIO_METAREPO_URL=`echo $CI_REPOSITORY_URL | sed "s/$CI_PROJECT_NAME/diorama_metarepo/"`
-    - echo "DIO_METAREPO_URL $DIO_METAREPO_URL"
-    - git clone --verbose ${DIO_METAREPO_URL}
-    - cd /tmp/diorama_metarepo/
-    # the following trick helps to only check out the repos we really
-    # need, i.e. the ones before the current repo.
-    - for reponame in `dio_list_repos.py`; do echo "BREAKING x$reponame x$CI_PROJECT_NAME"; if [ x$reponame = x$CI_PROJECT_NAME ]; then break; fi; (git submodule init $reponame && git submodule update $reponame && (cd $reponame && git checkout develop && git pull --verbose)); done
-    - echo '=============================================================='
-    - time /usr/bin/dio_build_before_me.py /tmp/diorama_metarepo $CI_PROJECT_NAME /usr/local
-    - du -sh /usr/local/
-    - /bin/rm -rf /builds/diorama/$CI_PROJECT_NAME/usr-local
-    - cp --archive /usr/local /builds/diorama/$CI_PROJECT_NAME/usr-local
-
-stylecheck:
-  stage: test
-  script:
-    - meson --version
-    - rsync -az /builds/diorama/$CI_PROJECT_NAME/usr-local/ /usr/local
-    - echo "Running unit tests... This will take about 60 seconds."
-    - echo setting http proxy for Los Alamos
-    - export http_proxy=http://proxyout.lanl.gov:8080
-    - export https_proxy=http://proxyout.lanl.gov:8080
-    - export no_proxy=localhost,lanl.gov
-    - export HTTP_PROXY=http://proxyout.lanl.gov:8080
-    - export HTTPS_PROXY=http://proxyout.lanl.gov:8080
-    - export NO_PROXY=localhost,lanl.gov
-    - echo setting diorama variables
-    - export DIO_REPO_BASE=/builds/diorama
-    - export DIO_LOCAL_PREFIX=/usr/local
-    - export PATH=$DIO_LOCAL_PREFIX/bin:$HOME/.local/bin:$PATH
-    - export PKG_CONFIG_PATH=$DIO_LOCAL_PREFIX/lib/pkgconfig:$DIO_LOCAL_PREFIX/lib64/pkgconfig:$DIO_LOCAL_PREFIX/share/pkgconfig:/usr/lib64/pkgconfig:$PKG_CONFIG_PATH
-    - export LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LIBRARY_PATH
-    - export LD_LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LD_LIBRARY_PATH
-    - export C_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$C_INCLUDE_PATH
-    - export CPLUS_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$CPLUS_INCLUDE_PATH
-    - export http_proxy=http://proxyout.lanl.gov:8080
-    - export https_proxy=http://proxyout.lanl.gov:8080
-    - export PATH=/root/.local/bin:$PATH
-    - meson --version
-    - meson _mbuildstyle
-    - ninja -C _mbuildstyle stylecheck
-    - ninja -C _mbuildstyle stylecheck-emacs
+    # - pip3 install --user --upgrade meson
+    # - find / -xdev -name meson -ls
+    # - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
+    # - meson --version || true
+    - echo "not much prep"
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+    - when: never
   artifacts:
     when: always
     paths:
       - _mbuild/cppunitTestResults.xml
       - _mbuild/meson-logs/testlog.junit.xml
-      - usr-local
     reports:
-      # junit: _mbuild/cppunitTestResults.xml
       junit: _mbuild/meson-logs/testlog.junit.xml
-  cache:
-    paths:
-      - _mbuild
   script:
-    - meson --version
-    - rsync -az /builds/diorama/$CI_PROJECT_NAME/usr-local/ /usr/local
-    - echo "Running unit tests... This will take about 60 seconds."
-    - echo setting http proxy for Los Alamos
-    - export http_proxy=http://proxyout.lanl.gov:8080
-    - export https_proxy=http://proxyout.lanl.gov:8080
-    - export no_proxy=localhost,lanl.gov
-    - export HTTP_PROXY=http://proxyout.lanl.gov:8080
-    - export HTTPS_PROXY=http://proxyout.lanl.gov:8080
-    - export NO_PROXY=localhost,lanl.gov
-    - echo setting diorama variables
-    - export DIO_REPO_BASE=/builds/diorama
-    - export DIO_LOCAL_PREFIX=/usr/local
-    - export PATH=$DIO_LOCAL_PREFIX/bin:$HOME/.local/bin:$PATH
-    - export PKG_CONFIG_PATH=$DIO_LOCAL_PREFIX/lib/pkgconfig:$DIO_LOCAL_PREFIX/lib64/pkgconfig:$DIO_LOCAL_PREFIX/share/pkgconfig:/usr/lib64/pkgconfig:$PKG_CONFIG_PATH
-    - export LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LIBRARY_PATH
-    - export LD_LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LD_LIBRARY_PATH
-    - export C_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$C_INCLUDE_PATH
-    - export CPLUS_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$CPLUS_INCLUDE_PATH
-    - export http_proxy=http://proxyout.lanl.gov:8080
-    - export https_proxy=http://proxyout.lanl.gov:8080
-    - export PATH=/root/.local/bin:$PATH
-    - meson --version
+    # - pip3 install --user --upgrade meson
+    - . /usr/local/src/lanl-proxy-bashrc-snippet
+    # - export DIO_REPO_BASE=/builds/diorama
+    # - export DIO_LOCAL_PREFIX=${CI_PROJECT_DIR}/ULOCAL
+    # - echo "setting diorama and other path variables based on $DIO_LOCAL_PREFIX"
+    # - . /usr/share/diorama-bootstrap/diorama-bashrc-snippet
+    - find / -xdev -name meson -ls
+    - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
+    # - export PATH=/root/.local/bin:$PATH
+    - git branch
+    - echo "Building and running unit tests..."
+    - /bin/rm -rf _mbuild
     - meson _mbuild --prefix=$DIO_LOCAL_PREFIX
-    - ninja -C _mbuild install
     - meson test -C _mbuild --suite unit
     - echo "Ran the meson unit tests."
-
-# coverage-test-job:   # This job also runs in the test stage.
-#   stage: test    # It can run at the same time as unit-test-job (in parallel).
-#   script:
-#     - rsync -az /builds/diorama/$CI_PROJECT_NAME/usr-local/ /usr/local
-#     - echo "Running unit tests... This will take about 60 seconds."
-#     # - echo setting http proxy for Los Alamos
-#     # - export http_proxy=http://proxyout.lanl.gov:8080
-#     # - export https_proxy=http://proxyout.lanl.gov:8080
-#     # - export no_proxy=localhost,lanl.gov
-#     # - export HTTP_PROXY=http://proxyout.lanl.gov:8080
-#     # - export HTTPS_PROXY=http://proxyout.lanl.gov:8080
-#     # - export NO_PROXY=localhost,lanl.gov
-#     # - echo setting diorama variables
-#     # - export DIO_REPO_BASE=/builds/diorama
-#     # - export DIO_LOCAL_PREFIX=/usr/local
-#     # - export PATH=$DIO_LOCAL_PREFIX/bin:$HOME/.local/bin:$PATH
-#     # - export PKG_CONFIG_PATH=$DIO_LOCAL_PREFIX/lib/pkgconfig:$DIO_LOCAL_PREFIX/lib64/pkgconfig:$DIO_LOCAL_PREFIX/share/pkgconfig:/usr/lib64/pkgconfig:$PKG_CONFIG_PATH
-#     # - export LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LIBRARY_PATH
-#     # - export LD_LIBRARY_PATH=$DIO_LOCAL_PREFIX/lib:$DIO_LOCAL_PREFIX/lib64:$LD_LIBRARY_PATH
-#     # - export C_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$C_INCLUDE_PATH
-#     # - export CPLUS_INCLUDE_PATH=$DIO_LOCAL_PREFIX/include:$CPLUS_INCLUDE_PATH
-#     # - export http_proxy=http://proxyout.lanl.gov:8080
-#     # - export https_proxy=http://proxyout.lanl.gov:8080
-#     # - export PATH=/root/.local/bin:$PATH
-#     - git branch
-#     - git checkout develop
-#     - git pull --verbose ${CI_REPOSITORY_URL}
-#     # now do coverage tests
-#     - meson --version
-#     - meson _mbuildcov -Db_coverage=true
-#     - meson test -C _mbuildcov --suite unit
-#     - ls /builds/diorama/datur/_mbuildcov/meson-logs
-#     - ls /builds/diorama/datur/_mbuildcov
-#     - ninja -C _mbuildcov coverage
-#     - cp _mbuildcov/meson-logs/coverage.xml _mbuildcov/meson-logs/cobertura.xml
-#     - echo "Ran the meson-based coverage tests."
-#   cache:
-#     paths:
-#       - _mbuildcov
-#   # coverage: '/^coverage: (\d+.\d+)$/'
-#   coverage: '/^TOTAL.*\s+(\d+\%)$/'
-#   artifacts:
-#     expose_as: 'Coverage HTML report'
-#     public: true
-#     paths:
-#       - _mbuildcov/meson-logs/coverage.txt
-#       - _mbuildcov/meson-logs/cobertura.xml
-#       - _mbuildcov/meson-logs/coverage.xml
-#       - _mbuildcov/meson-logs/coveragereport/
-#       - _mbuildcov/meson-logs/testlog.junit.xml
-#     expire_in: 1 month
-#     reports:
-#       # cobertura: _mbuildcov/meson-logs/coverage.xml
-#       cobertura: _mbuildcov/meson-logs/cobertura.xml
-#       # cobertura: _mbuildcov/meson-logs/coverage.txt
-#       # junit: _mbuildcov/cppunitTestResults.xml
-#       junit: _mbuildcov/meson-logs/testlog.junit.xml

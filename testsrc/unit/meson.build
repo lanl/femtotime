@@ -1,6 +1,7 @@
 ## unit tests
 unit_test_list = [
   'test_unit_gps_time',
+  'test_unit_utc_time',
 ]
 
 foreach test_base : unit_test_list

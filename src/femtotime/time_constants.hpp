@@ -5,8 +5,7 @@
 */
 #pragma once
 
-namespace tle {
-namespace time {
+namespace femtotime {
 
 #if __GNUC__
     typedef __int128 int128_t;
@@ -15,7 +14,7 @@ namespace time {
     typedef __int128_t int128_t;
     typedef __uint128_t uint128_t;
 #else
-    #error "128-bit integers are not supported on non-GCC or Clang platforms"
+    #error "128-bit integers are only supported on GCC and Clang"
 #endif
 
 static const int128_t fs_per_ns = 1'000'000;
@@ -39,5 +38,5 @@ static const int128_t fs_per_us = 1'000'000'000;
 static const int128_t secs_per_hour = sec_per_min * min_per_hour;
 static const int128_t secs_per_day = secs_per_hour * hours_per_day;
 static const int128_t secs_per_year = secs_per_day * days_per_year;
-} // time
-} // tle
+
+} // femtotime
