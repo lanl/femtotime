@@ -11,23 +11,23 @@ stages:          # List of stages for jobs, and their order of execution
   # - prepare
   - test
 
-prepare-job:
-  stage: prepare
-  cache:
-    paths:
-      - /builds/diorama/${CI_PROJECT_NAME}/*
-      - /builds/diorama/${CI_PROJECT_NAME}
-  artifacts:
-    when: 
-    paths:
-      - /builds/diorama/${CI_PROJECT_NAME}/*
-      - /builds/diorama/${CI_PROJECT_NAME}
-  script:
-    # - pip3 install --user --upgrade meson
-    # - find / -xdev -name meson -ls
-    # - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
-    # - meson --version || true
-    - echo "not much prep"
+# prepare-job:
+#   stage: prepare
+#   cache:
+#     paths:
+#       - /builds/diorama/${CI_PROJECT_NAME}/*
+#       - /builds/diorama/${CI_PROJECT_NAME}
+#   artifacts:
+#     when: 
+#     paths:
+#       - /builds/diorama/${CI_PROJECT_NAME}/*
+#       - /builds/diorama/${CI_PROJECT_NAME}
+#   script:
+#     # - pip3 install --user --upgrade meson
+#     # - find / -xdev -name meson -ls
+#     # - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
+#     # - meson --version || true
+#     - echo "not much prep"
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
