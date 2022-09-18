@@ -62,3 +62,46 @@ unit-test-job:   # This job runs in the test stage.
     - meson _mbuild
     - meson test -C _mbuild --suite unit
     - echo "Ran the meson unit tests."
+
+coverage-gcovr:   # This job also runs in the test stage.
+  stage: test    # It only starts when the job in the build stage completes successfully.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+    - when: never
+  cache:
+    key: diorama-ccache-single-key
+    paths:
+      - ${CI_PROJECT_DIR}/.ccache
+  script:
+    - cat gcovr.cfg || true
+    - grep '"PURPOSE":"NightlyCoverage"' ${TRIGGER_PAYLOAD} && echo "AND_IS_EXECUTED"
+    - echo "setting http proxy for Los Alamos"
+    - . /usr/local/src/lanl-proxy-bashrc-snippet
+    - . /usr/share/diorama-bootstrap/diorama-bashrc-snippet
+    - gcovr --version || true
+    - pip3 install gcovr --upgrade --user
+    - gcovr --version || true
+    - export PATH=/root/.local/bin:/opt/rh/devtoolset-11/root/usr/bin:$PATH
+    - gcovr --version || true
+    - meson _mbuildcov -Db_coverage=true    # first configure
+    - meson test -C _mbuildcov --suite=unit # then the unit test
+    - ninja coverage -C _mbuildcov # then the coverage reports
+    - echo "Ran the meson-based coverage tests with gcovr."
+  coverage: /^\s*lines\.*:\s*\d+.\d+\%/
+  artifacts:
+    when: always
+    expose_as: 'coverage-gcovr'
+    public: true
+    paths:
+      - _mbuildcov/meson-logs/coverage.xml
+      - _mbuildcov/meson-logs/coveragereport/
+    expire_in: 3 months
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: _mbuildcov/meson-logs/coverage.xml
