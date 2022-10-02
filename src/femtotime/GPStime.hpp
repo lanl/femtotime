@@ -25,15 +25,11 @@ class duration_t;
 /**
  * @class gps_time_t
  *
- * The purpose of this class is to wrap the BOOST ptime structure and
- * use it to represent GPS time (no leap seconds). Diorama is expected to use
- * GPS time internally. 
+ * The purpose of this class is to wrap our scalar 128bit femtosecond
+ * operaitons to represent GPS time (no leap seconds). This is
+ * motivated by Los Alamos's Diorama library which is expected to use
+ * GPS time internally.
  *
- * BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG is defined during the build
- * so that nanosecond resolution is available.  This is sufficient
- * (and better than GPS time precision) for absolute timestamps.  
- * Sub-nanosecond relative time is still available via
- * boost::units::quantity<si::time, double>.
  */
 class gps_time_t
 {
@@ -57,7 +53,7 @@ public:
 
   /** @brief Constructor from timestamp with double-valued seconds */
   gps_time_t(int year, int month, int day,
-               int hours, int minutes, long double secs);
+             int hours, int minutes, long double secs);
 
   /** @brief get the femtoseconds since the epoch */
   femtosecs_t get_fs() const;
@@ -134,6 +130,10 @@ public:
 
   /** @brief Convert a time_t (secs from UTC epoch) to a gps_time_t */
   static gps_time_t FromTime(time_t time);
+
+  /** @brief Convert a POSIX struct timespec (secs and naosecs from
+      UTC epoch) to a gps_time_t */
+  static gps_time_t FromTimespec(struct timespec *ts);
 
   bool operator==(const gps_time_t &other) const;
 
@@ -350,6 +350,9 @@ public:
 
   /** @brief Constructs a duration from an integer number of nanoseconds */
   static duration_t from_nanos(femtosecs_t nanoseconds);
+
+  /** @brief Constructs a duration from a POSIX timespec */
+  static duration_t from_timespec(struct timespec *ts);
 
   bool operator<(const duration_t &other) const;
   bool operator==(const duration_t &other) const;

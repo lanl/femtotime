@@ -707,6 +707,14 @@ gps_time_t gps_time_t::FromTime(time_t time)
   return gps_time_t::FromUTC(utc_time);
 }
 
+gps_time_t gps_time_t::FromTimespec(struct timespec *ts)
+{
+  utc_time_t utc_time(ts->tv_sec * fs_per_sec);
+  gps_time_t result = gps_time_t::FromUTC(utc_time);
+  result = result + fs_per_ns * ts->tv_nsec;
+  return result;
+}
+
 static long julian_epoch = 51604;
 
 /** @brief Return a Gregorian date nday from the modified Julian epoch */
@@ -1281,6 +1289,14 @@ duration_t duration_t::from_micros(femtosecs_t microseconds)
 duration_t duration_t::from_nanos(femtosecs_t nanoseconds)
 {
   auto femtos = nanoseconds * fs_per_ns;
+  return duration_t(femtos);
+}
+
+/** @brief Constructs a duration from a POSIX timespec */
+static duration_t from_timespec(struct timespec *ts)
+{
+  auto femtos = duration_t::from_secs(ts->tv_sec);
+  femtos = femtos + duration_t::from_nanos(ts->tv_nsec);
   return duration_t(femtos);
 }
 

@@ -30,6 +30,7 @@ class GPSTimeCppUnit : public CppUnit::TestFixture
   CPPUNIT_TEST(test_leap_seconds);
   CPPUNIT_TEST(test_utc);
   CPPUNIT_TEST(test_t_to_gps_and_back);
+  CPPUNIT_TEST(test_timespec_to_gps);
   CPPUNIT_TEST(test_isleapyear);
   CPPUNIT_TEST(test_decimalyear);
   CPPUNIT_TEST(test_leap_seconds_equal);
@@ -45,6 +46,7 @@ public:
   void test_leap_seconds();
   void test_utc();
   void test_t_to_gps_and_back();
+  void test_timespec_to_gps();
   void test_isleapyear();
   void test_decimalyear();
   void test_leap_seconds_equal();
@@ -182,6 +184,28 @@ void GPSTimeCppUnit::test_t_to_gps_and_back()
     "gps_time_t->gps_time_string->gps_time_t conversion failed",
     tin, t_return
   );
+}
+
+void GPSTimeCppUnit::test_timespec_to_gps()
+{
+  // check the converting from POSIX timespec to gps_time_t
+  // stuct timeval tm;
+  // timerclear(&tm);
+  struct timespec ts;
+  // strptime("2001-11-12 18:31:01", "%Y-%m-%d %H:%M:%S", &tm);
+  // strftime(buf, sizeof(buf), "%d %b %Y %H:%M", &tm);
+  // puts(buf);
+  time_t unix_time_now = time(NULL);
+  // gps_time_t gt = gps_time_t::FromTime(unix_time_now);
+  ts.tv_sec = unix_time_now;
+  ts.tv_nsec = 17'000'720;
+  gps_time_t gtspec = gps_time_t::FromTimespec(&ts);
+  // IMPROVEME: here we could test the POSIX time conversion to years
+  // and hours and so forth, but for now I just test that the
+  // nanoseconds are correct
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(
+    "nanoseconds from timespec were not properly recorded",
+    (long) gtspec.Nanoseconds(), ts.tv_nsec);
 }
 
 /**
