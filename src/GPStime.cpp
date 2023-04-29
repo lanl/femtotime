@@ -496,14 +496,13 @@ gps_time_t gps_time_t::FromUTCString(const std::string& utc_time)
 
   // Scan the string into constituent parts
   int result;
-  long nanos, femtos;
+  long nanos=0, femtos=0;
   auto dot_pos = utc_time.find(".");
   if (dot_pos == std::string::npos) {
     // If no "." in string, the number of seconds is an integer, so we can avoid
     // the issues with precision altogether.
     result = sscanf(utc_time.c_str(), "%04d-%02d-%02dT%02d:%02d:%02d",
                     &year, &month, &day, &hour, &min, &seconds);
-    nanos = 0;
 
     if (result != 6) {
       auto msg = fmt::format("Cannot parse string '{}' as UTC time", utc_time);
