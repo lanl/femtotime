@@ -25,6 +25,7 @@ class UTCTimeCppUnit : public CppUnit::TestFixture
   CPPUNIT_TEST(test_day_of_year);
   CPPUNIT_TEST(test_to_date);
   CPPUNIT_TEST(test_to_string);
+  CPPUNIT_TEST(test_from_string);
   CPPUNIT_TEST(test_is_leap);
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -33,6 +34,7 @@ public:
   void test_day_of_year();
   void test_to_date();
   void test_to_string();
+  void test_from_string();
   void test_is_leap();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(UTCTimeCppUnit);
@@ -155,6 +157,22 @@ void UTCTimeCppUnit::test_to_string()
     CPPUNIT_ASSERT_EQUAL(expected[i], times[i].ToString());
   }
 }
+
+void UTCTimeCppUnit::test_from_string()
+{
+  using test_case_t = std::pair<std::string, utc_time_t>;
+  std::vector<test_case_t> test_cases = {
+    test_case_t("2014-03-22T06:15:00", utc_time_t(2014, 3, 22, 6, 15, 0)),
+    test_case_t("2020-01-01T12:13:14", utc_time_t(2020, 1, 1, 12, 13, 14)),
+    test_case_t("2020-01-01T12:13:14.002",
+                utc_time_t(2020, 1, 1, 12, 13, 14, 2000000))
+  };
+  for (const auto& [utc_string, expected]: test_cases) {
+    
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(string("Test case: ")+utc_string,
+                                 expected, FromUTCString(utc_string).ToUTC());
+  }
+};
 
 void UTCTimeCppUnit::test_is_leap()
 {
