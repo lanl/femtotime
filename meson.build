@@ -8,7 +8,7 @@
 
 project('femtotime', 'cpp', version : '0.1.0plus',
        license : 'GPL-3.0-or-later', meson_version: '>= 0.58.2',
-       default_options : ['cpp_std=c++17'])
+       default_options : ['cpp_std=c++20'])
 
 conf_data = configuration_data()
 conf_data.set('VERSION', meson.project_version())

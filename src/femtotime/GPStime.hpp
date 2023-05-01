@@ -131,7 +131,7 @@ public:
   /** @brief Convert a time_t (secs from UTC epoch) to a gps_time_t */
   static gps_time_t FromTime(time_t time);
 
-  /** @brief Convert a POSIX struct timespec (secs and naosecs from
+  /** @brief Convert a POSIX struct timespec (secs and nanosecs from
       UTC epoch) to a gps_time_t */
   static gps_time_t FromTimespec(struct timespec *ts);
 
