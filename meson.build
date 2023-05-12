@@ -1,9 +1,9 @@
 # building the femtotime repository in Diorama.  You can build with:
-# meson _mbuild --prefix=$DIO_LOCAL_PREFIX
+# meson setup _mbuild --prefix=$DIO_LOCAL_PREFIX
 # ninja -C _mbuild
 
 # to enable docs you can try:
-# meson _mbuilddocs --prefix=$DIO_LOCAL_PREFIX -Dbuild_docs=true
+# meson setup _mbuilddocs --prefix=$DIO_LOCAL_PREFIX -Dbuild_docs=true
 # ninja -C _mbuilddocs
 
 project('femtotime', 'cpp', version : '0.1.0plus',
@@ -50,6 +50,9 @@ libfemtotime = shared_library('femtotime',
            install : true)
 
 all_libs = [libfemtotime]
+
+# install some (for now minimal) documentation
+install_man('man/femtotime.3')
 
 # now introduce the tests
 cppunit_dep = dependency('cppunit')
