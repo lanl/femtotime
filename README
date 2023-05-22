@@ -1,8 +1,17 @@
-femtotime is a library for time tracking which uses 128 bit integers
-to allow tracking time with femtosecond resolution.
+# femtotime
 
-The API takes the form of a C++ class gps_time_t, which allows
-setting, getting, manipulation, and conversion of time.  The
-conversion to and from UTC tracks leapseconds.
+femtotime is a library for time tracking which uses 128 bit integers to allow
+tracking time with femtosecond resolution.
+
+## About
+
+The `femtotime` API consists of 3 classes: `utc_time_t`, `gps_time_t`, and
+`duration_t`. These classes all contain numerous methods for querying the time,
+and converting timestamps between representations.
+
+## History
+
+The idea for this program came from something said by Keith Packard in a
+conversation with Mark Galassi, and was implemented by Patrick Norton.
 
 Approved for LANL public release: C22080.
