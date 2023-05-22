@@ -4,3 +4,5 @@ to allow tracking time with femtosecond resolution.
 The API takes the form of a C++ class gps_time_t, which allows
 setting, getting, manipulation, and conversion of time.  The
 conversion to and from UTC tracks leapseconds.
+
+Approved for LANL public release: C22080.
