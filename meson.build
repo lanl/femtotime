@@ -40,7 +40,12 @@ install_headers('src/femtotime/GPStime.hpp',
   install_dir : 'include/femtotime')
 
 fmt_dep = dependency('fmt')
-msgpack_dep = dependency('msgpack')
+msgpack_dep = dependency('msgpack', required : false)
+if msgpack_dep.found()
+  add_project_arguments([
+                         '-DHAVE_MSGPACK=1',
+                         ])
+endif
 all_deps = [fmt_dep, msgpack_dep]
 
 libfemtotime = shared_library('femtotime',
@@ -55,10 +60,12 @@ all_libs = [libfemtotime]
 install_man('man/femtotime.3')
 
 # now introduce the tests
-cppunit_dep = dependency('cppunit')
-test_deps = all_deps
-test_deps += cppunit_dep
-subdir('testsrc/unit')
+cppunit_dep = dependency('cppunit', required : false)
+if cppunit_dep.found()
+  test_deps = all_deps
+  test_deps += cppunit_dep
+  subdir('testsrc/unit')
+endif
 # No integration or regression tests yet
 # subdir('testsrc/integration')
 # subdir('testsrc/regression')

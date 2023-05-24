@@ -5,12 +5,16 @@
  *
  */
 
+#include <string.h>
+
 // [CPPUNIT headers]
 #include <cppunit/TestCaller.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#ifdef HAVE_MSGPACK
 // [MessagePack headers]
 #include <msgpack.hpp>
+#endif // HAVE_MSGPACK
 
 // [TLE headers]
 #include "femtotime/GPStime.hpp"
