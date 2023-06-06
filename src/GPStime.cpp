@@ -9,6 +9,7 @@
 
 // [C++ headers]
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <cassert>
 
