@@ -44,7 +44,8 @@ msgpack_dep = dependency('msgpack', required : false)
 if msgpack_dep.found()
   add_project_arguments([
                          '-DHAVE_MSGPACK=1',
-                         ])
+                         ],
+                         language : 'cpp')
 endif
 all_deps = [fmt_dep, msgpack_dep]
 
