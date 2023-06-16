@@ -1341,6 +1341,11 @@ bool duration_t::operator==(const duration_t &other) const
   return _femtosecs == other._femtosecs;
 }
 
+bool duration_t::operator!=(const duration_t &other) const
+{
+  return !(*this == other);
+}
+
 bool duration_t::operator<(const duration_t &other) const
 {
   return _femtosecs < other._femtosecs;
@@ -1356,7 +1361,22 @@ duration_t duration_t::operator-(const duration_t& other) const
   return duration_t(_femtosecs - other._femtosecs);
 }
 
+duration_t duration_t::operator*(double other) const
+{
+  return duration_t(_femtosecs * other);
+}
+
+duration_t duration_t::operator*(femtosecs_t other) const
+{
+  return duration_t(_femtosecs * other);
+}
+
 duration_t duration_t::operator/(double other) const
+{
+  return duration_t(_femtosecs / other);
+}
+
+duration_t duration_t::operator/(femtosecs_t other) const
 {
   return duration_t(_femtosecs / other);
 }

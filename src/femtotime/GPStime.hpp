@@ -356,10 +356,14 @@ public:
 
   bool operator<(const duration_t &other) const;
   bool operator==(const duration_t &other) const;
+  bool operator!=(const duration_t &other) const;
 
   duration_t operator+(const duration_t &other) const;
   duration_t operator-(const duration_t &other) const;
+  duration_t operator*(double other) const;
+  duration_t operator*(femtosecs_t other) const;
   duration_t operator/(double other) const;
+  duration_t operator/(femtosecs_t other) const;
 
 private:
   femtosecs_t _femtosecs;
