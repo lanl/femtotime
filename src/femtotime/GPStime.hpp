@@ -241,6 +241,9 @@ public:
   bool operator !=(const utc_time_t &other) const;
 
   bool operator <(const utc_time_t &other) const;
+  bool operator <=(const utc_time_t &other) const;
+  bool operator >(const utc_time_t &other) const;
+  bool operator >=(const utc_time_t &other) const;
 
 private:
   // A quick note on the representation of leap seconds:
@@ -355,6 +358,9 @@ public:
   static duration_t from_timespec(struct timespec *ts);
 
   bool operator<(const duration_t &other) const;
+  bool operator<=(const duration_t &other) const;
+  bool operator>(const duration_t &other) const;
+  bool operator>=(const duration_t &other) const;
   bool operator==(const duration_t &other) const;
   bool operator!=(const duration_t &other) const;
 
