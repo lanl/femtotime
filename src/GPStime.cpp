@@ -1152,6 +1152,18 @@ bool utc_time_t::operator<(const utc_time_t &other) const {
   }
 }
 
+bool utc_time_t::operator<=(const utc_time_t &other) const {
+  return *this == other || *this < other;
+}
+
+bool utc_time_t::operator>(const utc_time_t &other) const {
+  return other < *this;
+}
+
+bool utc_time_t::operator>=(const utc_time_t &other) const {
+  return *this == other || *this > other;
+}
+
 /** @brief The total number of femtoseconds in the duration */
 femtosecs_t duration_t::get_fs() const
 {
@@ -1341,9 +1353,29 @@ bool duration_t::operator==(const duration_t &other) const
   return _femtosecs == other._femtosecs;
 }
 
+bool duration_t::operator!=(const duration_t &other) const
+{
+  return !(*this == other);
+}
+
 bool duration_t::operator<(const duration_t &other) const
 {
   return _femtosecs < other._femtosecs;
+}
+
+bool duration_t::operator<=(const duration_t &other) const
+{
+  return *this == other || *this < other;
+}
+
+bool duration_t::operator>(const duration_t &other) const
+{
+  return other < *this;
+}
+
+bool duration_t::operator>=(const duration_t &other) const
+{
+  return *this == other || *this > other;
 }
 
 duration_t duration_t::operator+(const duration_t& other) const
@@ -1356,7 +1388,22 @@ duration_t duration_t::operator-(const duration_t& other) const
   return duration_t(_femtosecs - other._femtosecs);
 }
 
+duration_t duration_t::operator*(double other) const
+{
+  return duration_t(_femtosecs * other);
+}
+
+duration_t duration_t::operator*(femtosecs_t other) const
+{
+  return duration_t(_femtosecs * other);
+}
+
 duration_t duration_t::operator/(double other) const
+{
+  return duration_t(_femtosecs / other);
+}
+
+duration_t duration_t::operator/(femtosecs_t other) const
 {
   return duration_t(_femtosecs / other);
 }
