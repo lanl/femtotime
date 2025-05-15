@@ -899,7 +899,7 @@ string gps_time_t::ToStringBrief() const
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
 
   string s = fmt::sprintf(
-    "GPS_%04d-%02d-%02dT%02d:%02d:%02.15gZ",
+    "GPS_%04d-%02d-%02dT%02d:%02d:%02.15fZ",
     year, month, day, hours, mins, secs + femtos*1e-15
   );
   return s;
@@ -1154,7 +1154,7 @@ std::string utc_time_t::ToStringBrief() const
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
 
   return fmt::sprintf(
-    "%04d-%02d-%02dT%02d:%02d:%02.gZ",
+    "%04d-%02d-%02dT%02d:%02d:%02.9fZ",
     year, month, day, hours, mins, secs + _leap + femtos*1e-15
   );
 }
