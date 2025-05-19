@@ -898,7 +898,7 @@ string gps_time_t::ToStringBrief() const
   auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
 
-  string s = fmt::sprintf("GPS_%04d-%02d-%02dT%02d:%02d:%018.15fZ",
+  string s = fmt::sprintf("GPS_%04d-%02d-%02dT%02d:%02d:%012.9fZ",
                           year, month, day, hours, mins, secs + femtos*1e-15);
   return s;
 }
