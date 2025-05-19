@@ -898,10 +898,8 @@ string gps_time_t::ToStringBrief() const
   auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
 
-  string s = fmt::sprintf(
-    "GPS_%04d-%02d-%02dT%02d:%02d:%02.15fZ",
-    year, month, day, hours, mins, secs + femtos*1e-15
-  );
+  string s = fmt::sprintf("GPS_%04d-%02d-%02dT%02d:%02d:%018.15fZ",
+                          year, month, day, hours, mins, secs + femtos*1e-15);
   return s;
 }
 
@@ -1153,10 +1151,9 @@ std::string utc_time_t::ToStringBrief() const
   auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
 
-  return fmt::sprintf(
-    "%04d-%02d-%02dT%02d:%02d:%02.9fZ",
-    year, month, day, hours, mins, secs + _leap + femtos*1e-15
-  );
+  return fmt::sprintf("%04d-%02d-%02dT%02d:%02d:%012.9fZ",
+                      year, month, day, hours, mins,
+                      secs + _leap + femtos*1e-15);
 }
 
 /** @brief Convert the date portion of the timestamp to a string */
