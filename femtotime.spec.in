@@ -52,7 +52,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc NEWS ChangeLog COPYRIGHT LICENSE AUTHORS
+%doc NEWS COPYRIGHT LICENSE AUTHORS
 %{_libdir}/*.so
 
 %files devel
