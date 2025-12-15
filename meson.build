@@ -6,7 +6,7 @@
 # meson setup _mbuilddocs --prefix=$DIO_LOCAL_PREFIX -Dbuild_docs=true
 # ninja -C _mbuilddocs
 
-project('femtotime', 'cpp', version : '0.2.0',
+project('femtotime', 'cpp', version : '0.2.3',
        license : 'GPL-3.0-or-later', meson_version: '>= 0.58.2',
        default_options : ['cpp_std=c++20'])
 
@@ -41,13 +41,15 @@ install_headers('src/femtotime/GPStime.hpp',
 
 fmt_dep = dependency('fmt')
 msgpack_dep = dependency('msgpack', required : false)
-if msgpack_dep.found()
+msgpackcxx_dep = dependency('msgpack-cxx', required : false)
+if msgpack_dep.found() or msgpackcxx_dep.found()
+  message('using msgpack')
   add_project_arguments([
                          '-DHAVE_MSGPACK=1',
                          ],
                          language : 'cpp')
 endif
-all_deps = [fmt_dep, msgpack_dep]
+all_deps = [fmt_dep, msgpack_dep, msgpackcxx_dep]
 
 libfemtotime = shared_library('femtotime',
         'src/GPStime.cpp',
@@ -71,23 +73,23 @@ endif
 # subdir('testsrc/integration')
 # subdir('testsrc/regression')
 
-# stylecheck tests
-nsiqcppstyle = find_program('nsiqcppstyle', required : false)
-if nsiqcppstyle.found()
-  message('making stylecheck target')
-  cmd_str = ('python2 /usr/lib/nsiqcppstyle/nsiqcppstyle.py --no-update --output=xml -f ' + meson.project_source_root()
-             + '/filefilter.txt ' + meson.project_source_root())
-  stylecheck = custom_target('stylecheck',
-                             output : 'stylecheck',
-                             command : cmd_str.split())
-  cmd_str_e = ('python2 /usr/lib/nsiqcppstyle/nsiqcppstyle.py --no-update --output=emacs -f ' + meson.project_source_root()
-               + '/filefilter.txt ' + meson.project_source_root())
-  message('cmd_str_e: ' + cmd_str_e)
-  message(cmd_str_e)
-  stylecheck_emacs = custom_target('stylecheck-emacs',
-                                   output : 'stylecheck-emacs',
-                                   command : cmd_str_e.split())
-endif
+# # stylecheck tests
+# nsiqcppstyle = find_program('nsiqcppstyle', required : false)
+# if nsiqcppstyle.found()
+#   message('making stylecheck target')
+#   cmd_str = ('python2 /usr/lib/nsiqcppstyle/nsiqcppstyle.py --no-update --output=xml -f ' + meson.project_source_root()
+#              + '/filefilter.txt ' + meson.project_source_root())
+#   stylecheck = custom_target('stylecheck',
+#                              output : 'stylecheck',
+#                              command : cmd_str.split())
+#   cmd_str_e = ('python2 /usr/lib/nsiqcppstyle/nsiqcppstyle.py --no-update --output=emacs -f ' + meson.project_source_root()
+#                + '/filefilter.txt ' + meson.project_source_root())
+#   message('cmd_str_e: ' + cmd_str_e)
+#   message(cmd_str_e)
+#   stylecheck_emacs = custom_target('stylecheck-emacs',
+#                                    output : 'stylecheck-emacs',
+#                                    command : cmd_str_e.split())
+# endif
 
 # now prepare documentation
 # if get_option('build_docs')

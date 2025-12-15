@@ -1,2 +1,14 @@
+* New in version 0.2.3, 202
+  Cleanup and fix ToStringBrief() floating point
+
+* New in version 0.2.2, 2024-11-22
+  Cleanup and small string fixes
+
+* New in version 0.2.1, 2023-12-13
+  Build system and doc fixes
+
+* New in version 0.2.0, 2023-06-20
+  Miscellaneous work to firm up the library.
+
 * New in version 0.0.1, 2022-08-05
 ** Initial release as separate from Diorama

@@ -8,6 +8,7 @@
 #include "femtotime/GPStime.hpp"
 
 // [C++ headers]
+#include <time.h>
 #include <algorithm>
 #include <array>
 #include <iostream>
@@ -558,10 +559,9 @@ gps_time_t FromUTCString(const std::string& utc_time)
   return gps_time_t::FromUTCString(utc_time);
 }
 
-/** @brief Convert a UTC time string to a gps_time_t */
+/** @brief Convert a GPS time string to a gps_time_t */
 gps_time_t gps_time_t::FromGPSString(const std::string& gps_time)
 {
-
   int year, month, day, hour, min, seconds;
 
   // Scan the string into constituent parts
@@ -576,7 +576,7 @@ gps_time_t gps_time_t::FromGPSString(const std::string& gps_time)
     nanos = 0;
 
     if (result != 6) {
-      auto msg = fmt::format("Cannot parse string '{}' as UTC time", gps_time);
+      auto msg = fmt::format("Cannot parse string '{}' as GPS time", gps_time);
       throw std::runtime_error(msg);
     }
   } else {
@@ -660,12 +660,25 @@ std::string gps_time_t::ToUTCString() const
   return ToUTC().ToString();
 }
 
+std::string gps_time_t::ToUTCStringBrief() const
+{
+  return ToUTC().ToStringBrief();
+}
+
 /**
  * @brief Deprecated compatibility adapter for `gps_time_t::ToUTCString`.
  */
 std::string ToUTCString(const gps_time_t &gps_time)
 {
   return gps_time.ToUTCString();
+}
+
+/**
+ * @brief Deprecated compatibility adapter for `gps_time_t::ToUTCString`.
+ */
+std::string ToUTCStringBrief(const gps_time_t &gps_time)
+{
+  return gps_time.ToUTCStringBrief();
 }
 
 /** @brief Convert a gps_time_t to a utc_time_t */
@@ -870,10 +883,24 @@ string gps_time_t::ToString() const
   auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
 
-  return fmt::format(
+  string s = fmt::format(
     "GPS_{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:015}Z",
     year, month, day, hours, mins, secs, femtos
   );
+  return s;
+}
+
+string gps_time_t::ToStringBrief() const
+{
+  auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
+  auto [year, month, day] = gpsDayToDate(total_days);
+  auto [hours, partial_hours] = euclidean_div(partial_days, fs_per_hour);
+  auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
+  auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
+
+  string s = fmt::sprintf("GPS_%04d-%02d-%02dT%02d:%02d:%012.9fZ",
+                          year, month, day, hours, mins, secs + femtos*1e-15);
+  return s;
 }
 
 string gps_time_t::DateString() const
@@ -1113,6 +1140,20 @@ std::string utc_time_t::ToString() const
     "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:015}Z",
     year, month, day, hours, mins, secs + _leap, femtos
   );
+}
+
+/** @brief Convert the timestamp to a string */
+std::string utc_time_t::ToStringBrief() const
+{
+  auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
+  auto [year, month, day] = utcDayToDate(total_days);
+  auto [hours, partial_hours] = euclidean_div(partial_days, fs_per_hour);
+  auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
+  auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
+
+  return fmt::sprintf("%04d-%02d-%02dT%02d:%02d:%012.9fZ",
+                      year, month, day, hours, mins,
+                      secs + _leap + femtos*1e-15);
 }
 
 /** @brief Convert the date portion of the timestamp to a string */

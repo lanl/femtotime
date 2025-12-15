@@ -52,13 +52,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc NEWS ChangeLog COPYRIGHT LICENSE AUTHORS
+%doc NEWS COPYRIGHT LICENSE AUTHORS
 %{_libdir}/*.so
 
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/%{name}/*
 %{_libdir}/pkgconfig/*
+%{_mandir}/*/*
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
