@@ -1,9 +1,10 @@
-%global __meson $HOME/.local/bin/meson
-%global __python %{python3}
-%global set_build_flags %{nil}
-%global _vpath_srcdir .
-%global _vpath_builddir %{_target_platform}
-%global _smp_build_ncpus 64
+##global debug_package ##{nil}
+# FIXME: for now add-determinism is still buggy on fc41
+# ##global add_determinism_paths ##{nil}
+# ##global __python ##{python3}
+# ##global set_build_flags ##{nil}
+# ##global _vpath_srcdir .
+# ##global _vpath_builddir ##{_target_platform}
 
 Summary: orbit propagation libraries
 Name: @PACKAGE_NAME@
@@ -15,10 +16,14 @@ Group: Science
 URL: http://diorama.lanl.gov/
 Source0: %{name}-%{version}.tar.@COMPRESS_SUFFIX@
 
-Requires: msgpack
-
 BuildRequires: fmt-devel
-BuildRequires: msgpack
+# require meson-1.4.0.  this is native with el10, and with el8 and el9
+# we have found stable sources of meson 1.11 or higher, so this should
+# be OK.  for example:
+# https://pkgs.sysadmins.ws/el8/extras/x86_64/meson-1.11.2-1.el8.noarch.rpm
+# and
+# https://pkgs.sysadmins.ws/el9/extras/x86_64/meson-1.11.2-1.el9.noarch.rpm
+BuildRequires: meson >= 1.4.0
 
 %description
 Femtosecond-based time library.
@@ -26,29 +31,32 @@ Femtosecond-based time library.
 %package devel
 Summary: Development libraries for femtotime
 Requires: %{name}%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
+BuildRequires: fmt-devel
+%{?el8:BuildRequires: gcc-toolset-15-gcc-c++}
+%{?el8:BuildRequires: gcc-toolset-15-gcc-plugin-annobin}
+%{?el9:BuildRequires: gcc-toolset-15-gcc-c++}
+%{?el9:BuildRequires: gcc-toolset-15-gcc-plugin-annobin}
+%{?el10:BuildRequires: gcc-c++}
+%{?fedora:BuildRequires: gcc-c++}
 
 %description devel
 Development libraries for femtotime.
 
 %prep
-export PATH=$HOME/.local/bin/:$PATH
-%autosetup
+%setup -q
 
 %build
-export PATH=$HOME/.local/bin/:$PATH
-%meson
+echo "ABOUT_TO_TRY %meson --native-file ..."
+/bin/ls -lsat *.ini || true
+%{?el8:%meson --native-file gcc15-toolchain.ini}
+%{?el9:%meson --native-file gcc15-toolchain.ini}
+%{?el10:%meson}
+%{?fedora:%meson}
 %meson_build
 
 %install
-export PATH=$HOME/.local/bin/:$PATH
+/bin/ls -lsat
 %meson_install
-
-# check
-# export PATH=$HOME/.local/bin/:$PATH
-# meson_test
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)

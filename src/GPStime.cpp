@@ -13,6 +13,7 @@
 #include <array>
 #include <iostream>
 #include <cassert>
+#include <format>
 
 // [fmt]
 #include <fmt/printf.h>
@@ -644,7 +645,7 @@ gps_time_t gps_time_t::FromISOString(const std::string& iso_time)
 
 /**
  * @brief Convert a gps_time_t to a UTC string
- * 
+ *
  * @param gps_time The input GPS time to convert to UTC
  *
  * This function returns the time (stored in Diorama's internal
@@ -748,12 +749,12 @@ std::string String2Date(const std::string& date_string)
   int year, month, day;
   std::string result;
   try {
-  
-    if (IsJulian(date_string)) { 
-    
+
+    if (IsJulian(date_string)) {
+
       // this is Modified Julian Day format
       auto iday = stol(date_string);
-      
+
       // get UTC year, month, day from integer Julian day
       Julian2UTC(iday, year, month, day);
 
@@ -762,7 +763,7 @@ std::string String2Date(const std::string& date_string)
 
     } else {
       result = date_string;
-    }    
+    }
   } catch (std::exception &e) {
     auto msg = fmt::format("in {}() -- {}", __FUNCTION__, e.what());
     throw runtime_error(msg);
@@ -883,7 +884,7 @@ string gps_time_t::ToString() const
   auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
 
-  string s = fmt::format(
+  string s = std::format(
     "GPS_{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:015}Z",
     year, month, day, hours, mins, secs, femtos
   );
@@ -1135,11 +1136,11 @@ std::string utc_time_t::ToString() const
   auto [hours, partial_hours] = euclidean_div(partial_days, fs_per_hour);
   auto [mins, partial_mins] = euclidean_div(partial_hours, fs_per_min);
   auto [secs, femtos] = euclidean_div(partial_mins, fs_per_sec);
-
-  return fmt::format(
+  string result = std::format(
     "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:015}Z",
     year, month, day, hours, mins, secs + _leap, femtos
   );
+  return result;
 }
 
 /** @brief Convert the timestamp to a string */
@@ -1161,7 +1162,7 @@ std::string utc_time_t::DateString() const
 {
   auto [total_days, partial_days] = euclidean_div(_femtosecs, fs_per_day);
   auto [year, month, day] = utcDayToDate(total_days);
-  return fmt::format("{:04}-{:02}-{:02}", year, month, day);
+  return std::format("{:04}-{:02}-{:02}", year, month, day);
 }
 
 /** @brief Get the date portion of the timestamp as a y/m/d triple */

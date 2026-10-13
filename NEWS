@@ -1,4 +1,8 @@
-* New in version 0.2.3, 202
+* New in version 0.2.4, 2026-08.02
+  - Clean up the meson tricks in rpm spec file.
+  - Clarify precision in GPS time conversion to ascii string.
+
+* New in version 0.2.3, 2025-02.04
   Cleanup and fix ToStringBrief() floating point
 
 * New in version 0.2.2, 2024-11-22

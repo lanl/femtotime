@@ -11,7 +11,8 @@ and converting timestamps between representations.
 
 ## History
 
-The idea for this program came from something said by Keith Packard in a
-conversation with Mark Galassi, and was implemented by Patrick Norton.
+The idea for this program came from something said by Keith Packard in
+a conversation with Mark Galassi, and was implemented by Patrick
+Norton, with some small admustments by Mark Galassi.
 
 Approved for LANL public release: C22080.
